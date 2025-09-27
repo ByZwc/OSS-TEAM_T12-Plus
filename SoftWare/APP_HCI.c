@@ -3,45 +3,49 @@
 // 进入设置模式
 void app_joinSeting_Lcd(void)
 {
+#if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_HG1621
     Lcd_icon_onOff(icon_400Temp, 0);
     Lcd_icon_onOff(icon_350Temp, 0);
     Lcd_icon_onOff(icon_300Temp, 0);
-    Lcd_smgUp3_SetPNum(AllStatus_S.Seting.PNumber);
+    Lcd_SMG_DisplaySel(AllStatus_S.Seting.PNumber, 1, DispPNum);
     switch (AllStatus_S.Seting.PNumber)
     {
     case SMG_P01:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.BuzOnOff, 1);
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BuzOnOff, 1, DispOnOff);
         break;
     case SMG_P02:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1);
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1, DispOnOff);
         break;
     case SMG_P03:
         Lcd_icon_onOff(icon_temp, 1); // 点亮℃图标
-        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.calibration_temp, 1);
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.calibration_temp, 1, intVar);
         break;
     case SMG_P04:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1);
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1, DispOnOff);
         break;
     case SMG_P05:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.SleepDelayTime, 1);
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.SleepDelayTime, 1, uintVar);
         break;
     case SMG_P06:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.DisplayPowerOnOff, 1);
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.DisplayPowerOnOff, 1, DispOnOff);
         break;
     }
+#endif
 }
 
 // 退出设置模式
 void app_exitSeting_Lcd(void)
 {
+#if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_HG1621
     Lcd_icon_onOff(icon_400Temp, 1);
     Lcd_icon_onOff(icon_350Temp, 1);
     Lcd_icon_onOff(icon_300Temp, 1);
+#endif
     if (AllStatus_S.flashSave_s.PreinstallTempOnOff)
     {
         switch (AllStatus_S.flashSave_s.PreinstallTempNum)
@@ -58,7 +62,7 @@ void app_exitSeting_Lcd(void)
         }
     }
     AllStatus_S.Seting.PNumber = 1;
-    Lcd_smgUp3_SetNum(AllStatus_S.flashSave_s.TarTemp); // 恢复温度显示
+    Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.TarTemp, 1, uintVar); // 恢复温度显示
     if (!AllStatus_S.flashSave_s.DisplayPowerOnOff)
         Lcd_icon_onOff(icon_temp, 1); // 点亮℃图标
 }
@@ -147,11 +151,13 @@ void app_LcdCommonMode(uint8_t addOrSub)
             if (AllStatus_S.flashSave_s.PreinstallTempNum > 1)
                 AllStatus_S.flashSave_s.PreinstallTempNum--;
         }
+#if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_HG1621
         Lcd_icon_onOff(icon_400Temp, 1);
         Lcd_icon_onOff(icon_350Temp, 1);
         Lcd_icon_onOff(icon_300Temp, 1);
+#endif
         AllStatus_S.flashSave_s.TarTemp = 300 + (AllStatus_S.flashSave_s.PreinstallTempNum - 1) * 50;
-        Lcd_smgUp3_SetNum(AllStatus_S.flashSave_s.TarTemp); // 恢复温度显示
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.TarTemp, 1, uintVar); // 恢复温度显示
     }
     else
     {
@@ -169,7 +175,7 @@ void app_LcdCommonMode(uint8_t addOrSub)
             if (AllStatus_S.flashSave_s.TarTemp < MIN_TAR_TEMP - 5)
                 AllStatus_S.flashSave_s.TarTemp = MIN_TAR_TEMP - 5;
         }
-        Lcd_smgUp3_SetNum(AllStatus_S.flashSave_s.TarTemp); // 恢复温度显示
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.TarTemp, 1, uintVar); // 恢复温度显示
     }
 }
 
@@ -183,14 +189,14 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
             AllStatus_S.flashSave_s.BuzOnOff = 0;
         else
             AllStatus_S.flashSave_s.BuzOnOff = 1;
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.BuzOnOff, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BuzOnOff, 1, DispOnOff);
         break;
     case SMG_P02:
         if (AllStatus_S.flashSave_s.PreinstallTempOnOff)
             AllStatus_S.flashSave_s.PreinstallTempOnOff = 0;
         else
             AllStatus_S.flashSave_s.PreinstallTempOnOff = 1;
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1, DispOnOff);
         break;
     case SMG_P03:
         if (addOrSub)
@@ -203,14 +209,14 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
             if (AllStatus_S.flashSave_s.calibration_temp > (CALIBRATION_TEMP_MIN))
                 AllStatus_S.flashSave_s.calibration_temp--;
         }
-        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.calibration_temp, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.calibration_temp, 1, intVar);
         break;
     case SMG_P04:
         if (AllStatus_S.flashSave_s.BackgroundLightOnoff)
             AllStatus_S.flashSave_s.BackgroundLightOnoff = 0;
         else
             AllStatus_S.flashSave_s.BackgroundLightOnoff = 1;
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1, DispOnOff);
         break;
     case SMG_P05:
         if (addOrSub)
@@ -227,14 +233,14 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
             if (AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MIN)
                 AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MIN;
         }
-        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.SleepDelayTime, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.SleepDelayTime, 1, uintVar);
         break;
     case SMG_P06:
         if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
             AllStatus_S.flashSave_s.DisplayPowerOnOff = 0;
         else
             AllStatus_S.flashSave_s.DisplayPowerOnOff = 1;
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.DisplayPowerOnOff, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.DisplayPowerOnOff, 1, DispOnOff);
         break;
     }
 }
@@ -259,32 +265,32 @@ void app_Lcd_DisplayPNumber_SettingPage(uint8_t addOrSub)
             AllStatus_S.Seting.PNumber = OPTION_NUM;
     }
 
-    Lcd_smgUp3_SetPNum(AllStatus_S.Seting.PNumber);
+    // Lcd_SMG_DisplaySel(AllStatus_S.Seting.PNumber, 1, DispPNum);
     switch (AllStatus_S.Seting.PNumber)
     {
     case SMG_P01:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.BuzOnOff, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BuzOnOff, 1, DispOnOff);
         break;
     case SMG_P02:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1, DispOnOff);
         break;
     case SMG_P03:
         Lcd_icon_onOff(icon_temp, 1); // 点亮℃图标
-        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.calibration_temp, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.calibration_temp, 1, intVar);
         break;
     case SMG_P04:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1, DispOnOff);
         break;
     case SMG_P05:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_SetNimus(AllStatus_S.flashSave_s.SleepDelayTime, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.SleepDelayTime, 1, uintVar);
         break;
     case SMG_P06:
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-        Lcd_smgDowm3_DisplayOnOff(AllStatus_S.flashSave_s.DisplayPowerOnOff, 1);
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.DisplayPowerOnOff, 1, DispOnOff);
         break;
     }
 }
@@ -429,37 +435,37 @@ void app_SolderingTempDisplay(void)
             switch (AllStatus_S.SolderingState)
             {
             case SOLDERING_STATE_SHORTCIR_ERROR: // 短路
-                Lcd_smgDowm3_SetErrorNum(ERROR_E0, 1);
+                Lcd_SMG_DisplaySel(ERROR_E0, 1, DispErrorNum);
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_PULL_OUT_ERROR: // 拔出手柄
-                Lcd_smgDowm3_SetErrorNum(ERROR_E3, 1);
+                Lcd_SMG_DisplaySel(ERROR_E3, 1, DispErrorNum);
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_SLEEP: // 进入睡眠
                 if ((uint32_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] < last_display_temp)
                 {
-                    Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1);
+                    Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1, uintVar);
                     last_display_temp = AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM];
                 }
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_SLEEP_DEEP: // 进入深度睡眠
-                Lcd_smgDowm3_SetErrorNum(DRIVE_SLEEP, 1);
+                Lcd_SMG_DisplaySel(DRIVE_SLEEP, 1, uintVar);
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_OK: // 正常状态
 
-                // Lcd_smgDowm3_SetHex(AllStatus_S.adc_filter_value);    //温度原始ADC值，带FIR滤波
-                // Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter[SOLDERING_ELECTRICITY_NUM], 1);    //估计值
-                // Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_ELECTRICITY_NUM], 1);   // 实时值
-                // Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.Power, 1); // 功率值(互补滤波)
-                // Lcd_smgDowm3_SetHex(AllStatus_S.adc_value[SLEEP_NUM]); // 睡眠ADC值
+                // Lcd_SMG_DisplaySel(AllStatus_S.adc_filter_value, 1, uintVar);    //温度原始ADC值，带FIR滤波
+                // Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter[SOLDERING_ELECTRICITY_NUM], 1, uintVar);    //估计值
+                // Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_ELECTRICITY_NUM], 1, uintVar);   // 实时值
+                // Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.Power, 1, uintVar); // 功率值(互补滤波)
+                // Lcd_SMG_DisplaySel(AllStatus_S.adc_value[SLEEP_NUM], 1, uintVar); // 睡眠ADC值
 
                 if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
-                    Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.Power, 1);
+                    Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.Power, 1, uintVar);
                 else
-                    Lcd_smgDowm3_SetNum((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1);
+                    Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1, uintVar);
 
                 if (diff < 1.0f) // 首次到达温度蜂鸣器响应
                 {

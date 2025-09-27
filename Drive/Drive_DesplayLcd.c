@@ -302,4 +302,39 @@ void Drive_DisplayLcd_sendData_Task(void)
     __set_PRIMASK(primask_bit);
 }
 
+void Drive_Lcd_Test(void)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        displayMemory[i] = 0xFF;
+    }
+    Drive_DisplayLcd_sendData_Task(); // LCD数据发送任务
+    HAL_Delay(500);
+    for (int i = 0; i < 4; i++)
+    {
+        displayMemory[i] = 0x00;
+    }
+    Drive_DisplayLcd_sendData_Task(); // LCD数据发送任务
+    HAL_Delay(500);
+}
+
+void Drive_Lcd_Tid_Test(void)
+{
+    AllStatus_S.adc_value[SOLDERING_TID_NUM] = Drive_ADCConvert(SOLDERING_TID_NUM);
+    Lcd_SMG_DisplaySel(AllStatus_S.adc_value[SOLDERING_TID_NUM], 1, uintHex);
+    Drive_DisplayLcd_sendData_Task();
+    HAL_Delay(500);
+}
+
+void Drive_Lcd_ShortCircuit_Test(void)
+{
+    HAL_GPIO_WritePin(MOSSWITCH_GPIOB_PORT, MOSSWITCH_GPIOB_PIN, GPIO_PIN_SET);
+    HAL_Delay(30);
+    AllStatus_S.adc_value[SOLDERING_ELECTRICITY_NUM] = Drive_ADCConvert(SOLDERING_ELECTRICITY_NUM);
+    HAL_GPIO_WritePin(MOSSWITCH_GPIOB_PORT, MOSSWITCH_GPIOB_PIN, GPIO_PIN_RESET);
+    Lcd_SMG_DisplaySel(AllStatus_S.adc_value[SOLDERING_ELECTRICITY_NUM], 1, uintHex);
+    Drive_DisplayLcd_sendData_Task();
+    HAL_Delay(200);
+}
+
 #endif

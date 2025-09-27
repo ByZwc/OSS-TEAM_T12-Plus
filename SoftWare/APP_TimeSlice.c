@@ -51,6 +51,7 @@ void app_timeSlice_Task(void)
         APP_Power_complementaryFilter_Task(); // 功率互补滤波任务
         app_SolderingTempDisplay();           // 烙铁头温度显示任务
         app_Lcd_SolderingIcon_Blink_Task();   // 烙铁头图标闪烁任务
+        APP_Lcd_PowerSetPoint_Task();         // 设置LCD电源点
         Drive_DisplayLcd_sendData_Task();     // LCD显示信息发送任务
     }
     APP_SleepBackLight_Task();   // 休眠背光亮度任务

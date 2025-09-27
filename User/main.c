@@ -72,30 +72,14 @@ int main(void)
 
     /* AllStatus_S.adc_value[SOLDERING_TEMP210_NUM] = Drive_ADCConvert(SOLDERING_TEMP210_NUM);
     AllStatus_S.adc_filter_value = (uint16_t)APP_FirFilter_ADC((float32_t)AllStatus_S.adc_value[SOLDERING_TEMP210_NUM]);
-    Lcd_smgDowm3_SetHex */
+    Lcd_SMG_DisplaySel(AllStatus_S.adc_filter_value, 1, uintVar);
+    Drive_DisplayLcd_sendData_Task();*/
 
-    /* AllStatus_S.adc_value[SOLDERING_TID_NUM] = Drive_ADCConvert(SOLDERING_TID_NUM);
-    Lcd_smgDowm3_SetHex(AllStatus_S.adc_value[SOLDERING_TID_NUM]); */
+    // Drive_Lcd_Tid_Test();
 
-    /* HAL_GPIO_WritePin(T245_GPIO_PORT, T245_GPIO_PIN, GPIO_PIN_SET);
-    AllStatus_S.adc_value[SOLDERING_ELECTRICITY_NUM] = Drive_ADCConvert(SOLDERING_ELECTRICITY_NUM);
-    HAL_GPIO_WritePin(T245_GPIO_PORT, T245_GPIO_PIN, GPIO_PIN_RESET);
-    Lcd_smgDowm3_SetHex(AllStatus_S.adc_value[SOLDERING_ELECTRICITY_NUM]); */
+    Drive_Lcd_ShortCircuit_Test();
 
-    for (int i = 0; i < 4; i++)
-    {
-      displayMemory[i] = 0xFF;
-    }
-
-    HAL_Delay(500);
-    Drive_DisplayLcd_sendData_Task(); // LCD数据发送任务
-    for (int i = 0; i < 4; i++)
-    {
-      displayMemory[i] = 0x00;
-    }
-
-    HAL_Delay(500);
-    Drive_DisplayLcd_sendData_Task(); // LCD数据发送任务
+    // APP_Lcd_Test();
   }
 }
 
@@ -114,7 +98,7 @@ void APP_ErrorHandler(void)
   Lcd_icon_onOff(icon_SET, 1);
   Lcd_icon_onOff(icon_temp, 0);
   Lcd_icon_onOff(icon_cup, 0); // 熄灭
-  Lcd_smgUp3_SetNum(0);
+  Lcd_SMG_DisplaySel(0, 0, uintVar);
   while (1)
   {
     HAL_IWDG_Refresh(&IwdgHandle);
@@ -122,22 +106,22 @@ void APP_ErrorHandler(void)
     switch (AllStatus_S.SolderingState)
     {
     case SOLDERING_STATE_INIT_ERROR:
-      Lcd_smgDowm3_SetErrorNum(ERROR_SYSTEM_INIT, 1);
+      Lcd_SMG_DisplaySel(ERROR_SYSTEM_INIT, 1, DispErrorNum);
       break;
     case SOLDERING_STATE_SHORTCIR_ERROR:
-      Lcd_smgDowm3_SetErrorNum(ERROR_E2, 1);
+      Lcd_SMG_DisplaySel(ERROR_E2, 1, DispErrorNum);
       break;
     case SOLDERING_STATE_OPEN_ERROR:
-      Lcd_smgDowm3_SetErrorNum(ERROR_E0, 1);
+      Lcd_SMG_DisplaySel(ERROR_E0, 1, DispErrorNum);
       break;
     case SOLDERING_STATE_PULL_OUT_ERROR:
-      Lcd_smgDowm3_SetErrorNum(ERROR_E3, 1);
+      Lcd_SMG_DisplaySel(ERROR_E3, 1, DispErrorNum);
       APP_shortCircuitProtection();
       if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
         return;
       break;
     case SOLDERING_STATE_NTC_ERROR:
-      Lcd_smgDowm3_SetErrorNum(ERROR_E1, 1);
+      Lcd_SMG_DisplaySel(ERROR_E1, 1, DispErrorNum);
       break;
     }
     Drive_DisplayLcd_sendData_Task();
@@ -147,7 +131,7 @@ void APP_ErrorHandler(void)
       oneSttate = 1;
     }
     HAL_Delay(500);
-    Lcd_smgDowm3_SetErrorNum(0, 0);
+    Lcd_SMG_DisplaySel(0, 0, uintVar);
     Drive_DisplayLcd_sendData_Task();
     HAL_Delay(500);
     Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
