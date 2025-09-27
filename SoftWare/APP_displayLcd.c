@@ -1,10 +1,9 @@
 #include "main.h"
 
+const uint8_t smg_hexArray[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F, 0x77, 0x7C, 0x39, 0x5E, 0x79, 0x71};
 #if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_HG1621
 uint8_t Lcd_smgArray_Up[3];
 uint8_t Lcd_smgArray_Dowm[3];
-
-uint8_t smg_hexArray[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F, 0x77, 0x7C, 0x39, 0x5E, 0x79, 0x71};
 
 static void Lcd_icon_400Temp_onOff(uint8_t onOff)
 {
@@ -400,9 +399,7 @@ void Drive_Lcd_AllIcon_init(void)
 #endif
 
 #if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_AIP650
-uint8_t smgVideo_raw[3] = 0;
-const uint8_t code smgData[16] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71};
-
+/* uint8_t smgVideo_raw[3] = {0};
 static void TransForVideoMemory(uint8_t *destin, uint8_t *source)
 {
     uint8_t i;
@@ -422,24 +419,136 @@ static void TransForVideoMemory(uint8_t *destin, uint8_t *source)
         destin[i] |= (source[i] & 0x40) >> 3;
         destin[i] |= (source[i] & 0x80) >> 5;
     }
+} */
+
+static void Lcd_icon_400Temp_onOff(uint8_t onOff)
+{
+    if (onOff)
+        displayMemory[6] |= 0x01;
+    else
+        displayMemory[6] &= (~0x01);
 }
 
-void smgSetTwo(unsigned int Num, unsigned char onOff)
+static void Lcd_icon_350Temp_onOff(uint8_t onOff)
 {
-    unsigned char xdata ge, shi;
+    if (onOff)
+        displayMemory[6] |= 0x02;
+    else
+        displayMemory[6] &= (~0x02);
+}
+
+static void Lcd_icon_300Temp_onOff(uint8_t onOff)
+{
+    if (onOff)
+        displayMemory[6] |= 0x04;
+    else
+        displayMemory[6] &= (~0x04);
+}
+
+static void Lcd_icon_SET_onOff(uint8_t onOff)
+{
+    if (onOff)
+        displayMemory[6] |= 0x08;
+    else
+        displayMemory[6] &= (~0x08);
+}
+
+static void Lcd_icon_soldering_onOff(uint8_t onOff)
+{
+    if (onOff)
+        displayMemory[7] |= 0x08;
+    else
+        displayMemory[7] &= (~0x08);
+}
+
+static void Lcd_icon_cup_onOff(uint8_t onOff)
+{
+    if (onOff)
+        displayMemory[9] |= 0x08;
+    else
+        displayMemory[9] &= (~0x08);
+}
+
+static void Lcd_icon_temp_onOff(uint8_t onOff)
+{
+    if (onOff)
+        displayMemory[11] |= 0x08;
+    else
+        displayMemory[11] &= (~0x08);
+}
+
+void Lcd_icon_onOff(LCD_ICON_TYPE lcdIcon, uint8_t onOff)
+{
+    switch (lcdIcon)
+    {
+    case icon_400Temp:
+        Lcd_icon_400Temp_onOff(onOff);
+        break;
+    case icon_350Temp:
+        Lcd_icon_350Temp_onOff(onOff);
+        break;
+    case icon_300Temp:
+        Lcd_icon_300Temp_onOff(onOff);
+        break;
+    case icon_SET:
+        Lcd_icon_SET_onOff(onOff);
+        break;
+    case icon_soldering:
+        Lcd_icon_soldering_onOff(onOff);
+        break;
+    case icon_cup:
+        Lcd_icon_cup_onOff(onOff);
+        break;
+    case icon_temp:
+        Lcd_icon_temp_onOff(onOff);
+        break;
+    }
+}
+void Lcd_smgDowm3_SetNum(uint16_t num, uint8_t OnOff) // 显示0-999整数
+{
+}
+void Lcd_smgDowm3_SetHex(uint16_t num) // 显示16进制
+{
+}
+void Lcd_smgDowm3_DisplayOnOff(uint8_t OnOff_Icon, uint8_t OnOff) // 显示ON/OFF
+{
+}
+void Lcd_smgDowm3_SetNimus(int16_t Nimus, uint8_t OnOff) // 显示负数-50~50
+{
+}
+void Lcd_smgDowm3_SetErrorNum(int16_t ErrorNum, uint8_t OnOff) // 显示错误码
+{
+}
+void Lcd_smgUp3_SetNum(uint16_t num) // 显示0-999整数
+{
+}
+void Lcd_smgUp3_SetPNum(uint16_t Number) // 显示P码
+{
+}
+void Drive_Lcd_AllIcon_init(void)
+{
+}
+
+void smgSetTwo(uint16_t Num, uint8_t onOff)
+{
+    uint8_t ge, shi, bai;
     if (onOff)
     {
         ge = Num % 10;
         shi = Num / 10 % 10;
-        smgVideo_raw[3] = smgData[shi];
-        smgVideo_raw[2] = smgData[ge];
+        bai = Num / 100 % 10;
+
+        displayMemory[0] = smg_hexArray[bai];
+        displayMemory[1] = smg_hexArray[shi];
+        displayMemory[2] = smg_hexArray[ge];
     }
     else
     {
-        smgVideo_raw[2] = 0;
-        smgVideo_raw[3] = 0;
+        displayMemory[0] = 0;
+        displayMemory[1] = 0;
+        displayMemory[2] = 0;
     }
-    TransForVideoMemory(displayMemory, smgVideo_raw);
+    // TransForVideoMemory(displayMemory, smgVideo_raw);
 }
 
 #endif

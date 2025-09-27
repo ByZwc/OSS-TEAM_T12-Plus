@@ -179,11 +179,11 @@ static void AIP650E_DIO_SetInOut(uint32_t mode)
 
 static void AIP650E_nop(void)
 {
-    _nop_();
-    _nop_();
-    _nop_();
-    _nop_();
-    _nop_();
+    uint8_t i;
+    for (i = 0; i < 10; i++)
+    {
+        __NOP();
+    }
 }
 
 static void AIP650E_sendStart(void)
@@ -215,9 +215,9 @@ static void AIP650E_RecAck(void)
     AIP650E_DIO_SetInOut(0);
 }
 
-static void AIP650E_sendData(unsigned char data_t)
+static void AIP650E_sendData(uint8_t data_t)
 {
-    static unsigned char xdata i;
+    static uint8_t i;
 
     for (i = 0; i < 8; i++)
     {
@@ -244,6 +244,22 @@ void Drive_DisplayLcd_Init(void)
     AIP650E_sendStart();
     AIP650E_sendData(AIP650E_WRITE_VIDEO);
     AIP650E_sendData(AIP650E_SET_BRIGHTNESS_MAX);
+    AIP650E_sendStop();
+
+    /* Exit critical section: restore previous priority mask */
+    __set_PRIMASK(primask_bit);
+}
+
+void Drive_DisplayLcd_SetBrightnessLow(void)
+{
+    uint32_t primask_bit;
+    /* Enter critical section */
+    primask_bit = __get_PRIMASK();
+    __disable_irq();
+
+    AIP650E_sendStart();
+    AIP650E_sendData(AIP650E_WRITE_VIDEO);
+    AIP650E_sendData(AIP650E_SET_BRIGHTNESS_LOW);
     AIP650E_sendStop();
 
     /* Exit critical section: restore previous priority mask */

@@ -50,6 +50,7 @@
 extern uint8_t displayMemory[ALL_SEG_NUM];
 extern void Drive_DisplayLcd_Gpio_Init(void);
 extern void Drive_DisplayLcd_Init(void);
+void Drive_DisplayLcd_SetBrightnessLow(void);
 extern void Drive_DisplayLcd_sendData_Task(void);
 
 #endif

@@ -3,26 +3,27 @@
 TIM_HandleTypeDef TimHandle;
 TIM_OC_InitTypeDef sConfig;
 
+// Macro definitions for GPIO pins and timer parameters
+
 void Drive_MosSwitch_OFF(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
 
     /* Enable the GPIO_LED Clock */
-    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
     /* Configure the GPIO_LED pin */
-    GPIO_InitStruct.Pin = T245_GPIO_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Pin = MOSSWITCH_GPIOB_PIN;
+    GPIO_InitStruct.Mode = MOSSWITCH_GPIO_MODE_OUT;
+    GPIO_InitStruct.Pull = MOSSWITCH_GPIO_PULL;
+    GPIO_InitStruct.Speed = MOSSWITCH_GPIO_SPEED;
 
-    HAL_GPIO_Init(T245_GPIO_PORT, &GPIO_InitStruct);
-    HAL_GPIO_WritePin(T245_GPIO_PORT, T245_GPIO_PIN, GPIO_PIN_RESET);
-
+    HAL_GPIO_Init(MOSSWITCH_GPIOB_PORT, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(MOSSWITCH_GPIOB_PORT, MOSSWITCH_GPIOB_PIN, GPIO_PIN_RESET);
 }
 
 /**
- * @brief  Initialize TIM1
+ * @brief  Initialize TIM3
  * @param  None
  * @retval None
  */
@@ -30,26 +31,26 @@ static void Drive_TIM3_INIT(void)
 {
     __HAL_RCC_TIM3_CLK_ENABLE();
 
-    /* Select TIM1 */
-    TimHandle.Instance = TIM3;
+    /* Select TIM3 */
+    TimHandle.Instance = MOSSWITCH_TIM_INSTANCE;
 
     /* Auto-reload value */
-    TimHandle.Init.Period = MAX_PWM_PRIOD;
+    TimHandle.Init.Period = MOSSWITCH_TIM_PERIOD;
 
     /* Prescaler value */
-    TimHandle.Init.Prescaler = 6 - 1;
+    TimHandle.Init.Prescaler = MOSSWITCH_TIM_PRESCALER;
 
     /* Clock not divided */
-    TimHandle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    TimHandle.Init.ClockDivision = MOSSWITCH_TIM_CLOCKDIV;
 
     /* Up-counting mode*/
-    TimHandle.Init.CounterMode = TIM_COUNTERMODE_UP;
+    TimHandle.Init.CounterMode = MOSSWITCH_TIM_COUNTERMODE;
 
     /* No repetition */
-    TimHandle.Init.RepetitionCounter = 1 - 1;
+    TimHandle.Init.RepetitionCounter = MOSSWITCH_TIM_REPETITION;
 
     /* Auto-reload register not buffered */
-    TimHandle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    TimHandle.Init.AutoReloadPreload = MOSSWITCH_TIM_AUTORELOAD;
 
     /* Initialize clock settings */
     if (HAL_TIM_Base_Init(&TimHandle) != HAL_OK)
@@ -59,35 +60,35 @@ static void Drive_TIM3_INIT(void)
     }
 }
 /**
- * @brief  TIM1 PWM Configuration
+ * @brief  TIM3 PWM Configuration
  * @param  None
  * @retval None
  */
 static void Drive_TIM3_PWM(void)
 {
     /*Output configured for PWM1 mode */
-    sConfig.OCMode = TIM_OCMODE_PWM1;
+    sConfig.OCMode = MOSSWITCH_PWM_OCMODE;
 
     /*OC channel output active high */
-    sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+    sConfig.OCPolarity = MOSSWITCH_PWM_OCPOLARITY;
 
     /*Disable the output compare fast mode */
-    sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+    sConfig.OCFastMode = MOSSWITCH_PWM_OCFASTMODE;
 
     /*OCN channel output active high */
-    sConfig.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+    sConfig.OCNPolarity = MOSSWITCH_PWM_OCNPOLARITY;
 
     /*Idle state OC1N output low level */
-    sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+    sConfig.OCNIdleState = MOSSWITCH_PWM_OCNIDLE;
 
     /*Idle state OC1 output low level*/
-    sConfig.OCIdleState = TIM_OCIDLESTATE_RESET;
+    sConfig.OCIdleState = MOSSWITCH_PWM_OCIDLE;
 
-    /*Set CC2 pulse value to 20, resulting in a duty cycle of 20/50 = 40% */
-    sConfig.Pulse = 0;
+    /*Set CC2 pulse value to 0 */
+    sConfig.Pulse = MOSSWITCH_PWM_PULSE;
 
     /* Configure Channel 2 for PWM */
-    if (HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_2) != HAL_OK)
+    if (HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, MOSSWITCH_TIM_CHANNEL) != HAL_OK)
     {
         AllStatus_S.SolderingState = SOLDERING_STATE_INIT_ERROR;
         APP_ErrorHandler();
@@ -101,7 +102,7 @@ static void Drive_MosPWMoutMode(void)
     Drive_TIM3_PWM();
 
     /* Start PWM output on Channel 2 */
-    if (HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_2) != HAL_OK)
+    if (HAL_TIM_PWM_Start(&TimHandle, MOSSWITCH_TIM_CHANNEL) != HAL_OK)
     {
         AllStatus_S.SolderingState = SOLDERING_STATE_INIT_ERROR;
         APP_ErrorHandler();
@@ -114,16 +115,13 @@ void Drive_MosSwitch210_PWMOut(void)
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
-    // Drive_MosSwitch_OFF();
+    GPIO_InitStruct.Pin = MOSSWITCH_GPIOA_PIN;
+    GPIO_InitStruct.Mode = MOSSWITCH_GPIO_MODE_AF;
+    GPIO_InitStruct.Pull = MOSSWITCH_GPIO_PULL;
+    GPIO_InitStruct.Speed = MOSSWITCH_GPIO_SPEED;
+    GPIO_InitStruct.Alternate = MOSSWITCH_GPIO_AF_TIM3;
 
-    GPIO_InitStruct.Pin = GPIO_PIN_7;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF1_TIM3;
-
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    // HAL_GPIO_DeInit(GPIOA, GPIO_PIN_7);
+    HAL_GPIO_Init(MOSSWITCH_GPIOA_PORT, &GPIO_InitStruct);
     if (!AllStatus_S.PwmIsInitComplete)
     {
         Drive_MosPWMoutMode();
@@ -135,18 +133,15 @@ void Drive_MosSwitch245_PWMOut(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
 
-    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
-    // Drive_MosSwitch_OFF();
+    GPIO_InitStruct.Pin = MOSSWITCH_GPIOB_PIN;
+    GPIO_InitStruct.Mode = MOSSWITCH_GPIO_MODE_AF;
+    GPIO_InitStruct.Pull = MOSSWITCH_GPIO_PULL;
+    GPIO_InitStruct.Speed = MOSSWITCH_GPIO_SPEED;
+    GPIO_InitStruct.Alternate = MOSSWITCH_GPIO_AF_TIM3;
 
-    GPIO_InitStruct.Pin = T245_GPIO_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF13_TIM3;
-
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    // HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5);
+    HAL_GPIO_Init(MOSSWITCH_GPIOB_PORT, &GPIO_InitStruct);
     if (!AllStatus_S.PwmIsInitComplete)
     {
         Drive_MosPWMoutMode();

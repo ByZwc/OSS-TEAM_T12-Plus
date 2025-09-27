@@ -5,6 +5,7 @@ void Drive_BUTTON_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
   DRIVE_BUTTON_RCC_ENABLE();
+  RES_ADC_SEL_RCC_ENABLE();
   // SLEEP_BUTTON_RCC_ENABLE();
 
   GPIO_InitStruct.Pin = DRIVE_BUTTON_GPIO_PIN;
@@ -13,6 +14,13 @@ void Drive_BUTTON_Init(void)
   GPIO_InitStruct.Mode = DRIVE_BUTTON_GPIO_MODE;
 
   HAL_GPIO_Init(DRIVE_BUTTON_GPIO_PORT, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = RES_ADC_SEL_GPIO_PIN;
+  GPIO_InitStruct.Pull = RES_ADC_SEL_GPIO_PULL;
+  GPIO_InitStruct.Speed = RES_ADC_SEL_GPIO_SPEED;
+  GPIO_InitStruct.Mode = RES_ADC_SEL_GPIO_MODE;
+  HAL_GPIO_Init(RES_ADC_SEL_GPIO_PORT, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(RES_ADC_SEL_GPIO_PORT, RES_ADC_SEL_GPIO_PIN, GPIO_PIN_RESET);
 
   /* GPIO_InitStruct.Pin = SLEEP_BUTTON_GPIO_PIN;
   GPIO_InitStruct.Pull = SLEEP_BUTTON_GPIO_PULL;
