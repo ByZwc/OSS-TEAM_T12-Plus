@@ -1,6 +1,8 @@
 #ifndef __DRIVE_DESPLAYLCD_H__
 #define __DRIVE_DESPLAYLCD_H__
 
+
+/******************************************************************************* */
 #define HG1612_CS_PORT GPIOA
 #define HG1612_CS_PIN GPIO_PIN_3
 #define HG1612_CS_UP() HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_SET)
@@ -25,10 +27,29 @@
 #define CLOSE_VIDEO 0x804 // 0b1000 0000 0100  关闭显示
 #define CLOSE_SYS 0x800   // 0b1000 0000 0000  关闭时钟
 
+/******************************************************************************* */
+#define AIP650E_DIO_PORT GPIOF
+#define AIP650E_DIO_PIN GPIO_PIN_1
+#define AIP650E_DIO_UP() HAL_GPIO_WritePin(GPIOF, GPIO_PIN_1, GPIO_PIN_SET)
+#define AIP650E_DIO_DOWM() HAL_GPIO_WritePin(GPIOF, GPIO_PIN_1, GPIO_PIN_RESET)
+
+#define AIP650E_CLK_PORT GPIOF
+#define AIP650E_CLK_PIN GPIO_PIN_0
+#define AIP650E_CLK_UP() HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_SET)
+#define AIP650E_CLK_DOWM() HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_RESET)
+
+#define AIP650E_WRITE_VIDEO 0x48
+#define AIP650E_SET_ADDR1 0x68
+#define AIP650E_SET_ADDR2 0x6A
+#define AIP650E_SET_ADDR3 0x6C
+#define AIP650E_SET_ADDR4 0x6E
+#define AIP650E_SET_BRIGHTNESS_MAX 0x71
+#define AIP650E_SET_BRIGHTNESS_LOW 0x8A
+/******************************************************************************* */
+
 extern uint8_t displayMemory[ALL_SEG_NUM];
 extern void Drive_DisplayLcd_Gpio_Init(void);
 extern void Drive_DisplayLcd_Init(void);
-
 extern void Drive_DisplayLcd_sendData_Task(void);
 
 #endif

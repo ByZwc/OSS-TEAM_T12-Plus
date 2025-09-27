@@ -1,5 +1,6 @@
 #include "main.h"
 
+#if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_HG1621
 uint8_t Lcd_smgArray_Up[3];
 uint8_t Lcd_smgArray_Dowm[3];
 
@@ -396,3 +397,49 @@ void Drive_Lcd_AllIcon_init(void)
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
     Drive_DisplayLcd_sendData_Task();
 }
+#endif
+
+#if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_AIP650
+uint8_t smgVideo_raw[3] = 0;
+const uint8_t code smgData[16] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71};
+
+static void TransForVideoMemory(uint8_t *destin, uint8_t *source)
+{
+    uint8_t i;
+
+    destin[2] = 0x00;
+    destin[3] = 0x00;
+
+    for (i = 2; i < 4; i++)
+    {
+        destin[i] |= (source[i] & 0x01);
+        destin[i] |= (source[i] & 0x02);
+        destin[i] |= (source[i] & 0x04) << 5;
+        destin[i] |= (source[i] & 0x08) << 3;
+
+        destin[i] |= (source[i] & 0x10) << 1;
+        destin[i] |= (source[i] & 0x20) >> 1;
+        destin[i] |= (source[i] & 0x40) >> 3;
+        destin[i] |= (source[i] & 0x80) >> 5;
+    }
+}
+
+void smgSetTwo(unsigned int Num, unsigned char onOff)
+{
+    unsigned char xdata ge, shi;
+    if (onOff)
+    {
+        ge = Num % 10;
+        shi = Num / 10 % 10;
+        smgVideo_raw[3] = smgData[shi];
+        smgVideo_raw[2] = smgData[ge];
+    }
+    else
+    {
+        smgVideo_raw[2] = 0;
+        smgVideo_raw[3] = 0;
+    }
+    TransForVideoMemory(displayMemory, smgVideo_raw);
+}
+
+#endif

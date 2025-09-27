@@ -1,7 +1,7 @@
 #include "main.h"
 
 uint8_t displayMemory[ALL_SEG_NUM] = {0};
-
+#if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_HG1621
 void Drive_DisplayLcd_Gpio_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
@@ -135,3 +135,155 @@ void Drive_DisplayLcd_sendData_Task(void)
     /* Exit critical section: restore previous priority mask */
     //__set_PRIMASK(primask_bit);
 }
+#endif
+
+#if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_AIP650
+void Drive_DisplayLcd_Gpio_Init(void)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+
+    GPIO_InitStruct.Pin = AIP650E_CLK_PIN | AIP650E_DIO_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(AIP650E_CLK_PORT, &GPIO_InitStruct);
+
+    HAL_GPIO_WritePin(AIP650E_CLK_PORT, AIP650E_CLK_PIN, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(AIP650E_DIO_PORT, AIP650E_DIO_PIN, GPIO_PIN_SET);
+}
+
+static void AIP650E_DIO_SetInOut(uint32_t mode)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    __HAL_RCC_GPIOF_CLK_ENABLE();
+    if (mode == 0)
+    {
+        GPIO_InitStruct.Pin = AIP650E_DIO_PIN;
+        GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        HAL_GPIO_Init(AIP650E_DIO_PORT, &GPIO_InitStruct);
+    }
+    else
+    {
+        GPIO_InitStruct.Pin = AIP650E_DIO_PIN;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_PULLUP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        HAL_GPIO_Init(AIP650E_DIO_PORT, &GPIO_InitStruct);
+    }
+}
+
+static void AIP650E_nop(void)
+{
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+}
+
+static void AIP650E_sendStart(void)
+{
+    AIP650E_DIO_DOWM();
+    AIP650E_nop();
+    AIP650E_CLK_DOWM();
+    AIP650E_nop();
+}
+
+static void AIP650E_sendStop(void)
+{
+    AIP650E_DIO_DOWM();
+    AIP650E_nop();
+    AIP650E_CLK_UP();
+    AIP650E_nop();
+    AIP650E_DIO_UP();
+    AIP650E_nop();
+}
+
+static void AIP650E_RecAck(void)
+{
+    AIP650E_DIO_SetInOut(1);
+    AIP650E_nop();
+    AIP650E_CLK_UP();
+    AIP650E_nop();
+    AIP650E_CLK_DOWM();
+    AIP650E_nop();
+    AIP650E_DIO_SetInOut(0);
+}
+
+static void AIP650E_sendData(unsigned char data_t)
+{
+    static unsigned char xdata i;
+
+    for (i = 0; i < 8; i++)
+    {
+        if (data_t & 0X80)
+            AIP650E_DIO_UP();
+        else
+            AIP650E_DIO_DOWM();
+        AIP650E_nop();
+        AIP650E_CLK_UP();
+        AIP650E_nop();
+        AIP650E_CLK_DOWM();
+        data_t = (data_t << 1);
+    }
+    AIP650E_RecAck();
+}
+
+void Drive_DisplayLcd_Init(void)
+{
+    uint32_t primask_bit;
+    /* Enter critical section */
+    primask_bit = __get_PRIMASK();
+    __disable_irq();
+
+    AIP650E_sendStart();
+    AIP650E_sendData(AIP650E_WRITE_VIDEO);
+    AIP650E_sendData(AIP650E_SET_BRIGHTNESS_MAX);
+    AIP650E_sendStop();
+
+    /* Exit critical section: restore previous priority mask */
+    __set_PRIMASK(primask_bit);
+}
+
+void Drive_DisplayLcd_sendData_Task(void)
+{
+    uint32_t primask_bit;
+    /* Enter critical section */
+    primask_bit = __get_PRIMASK();
+    __disable_irq();
+
+    /* AIP650E_sendStart();
+    AIP650E_sendData(AIP650E_WRITE_VIDEO);
+    AIP650E_sendData(AIP650E_SET_BRIGHTNESS_MAX);
+    AIP650E_sendStop(); */
+
+    AIP650E_sendStart();
+    AIP650E_sendData(AIP650E_SET_ADDR1);
+    AIP650E_sendData(displayMemory[0]);
+    AIP650E_sendStop();
+
+    AIP650E_sendStart();
+    AIP650E_sendData(AIP650E_SET_ADDR2);
+    AIP650E_sendData(displayMemory[1]);
+    AIP650E_sendStop();
+
+    AIP650E_sendStart();
+    AIP650E_sendData(AIP650E_SET_ADDR3);
+    AIP650E_sendData(displayMemory[2]);
+    AIP650E_sendStop();
+
+    AIP650E_sendStart();
+    AIP650E_sendData(AIP650E_SET_ADDR4);
+    AIP650E_sendData(displayMemory[3]);
+    AIP650E_sendStop();
+
+    /* Exit critical section: restore previous priority mask */
+    __set_PRIMASK(primask_bit);
+}
+
+#endif

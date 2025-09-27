@@ -66,7 +66,13 @@
 /* Private defines -----------------------------------------------------------*/
 #define DEBUG_TAG "OSS-T210"
 
-#define USE_BUZ_TYPE 0 // 0:有源蜂鸣器 1:无源蜂鸣器（可发出音调）
+#define USE_BUZ_ACTIVE 0
+#define USE_BUZ_PASSIVE 1
+#define USE_BUZ_TYPE USE_BUZ_ACTIVE // 0:有源蜂鸣器 1:无源蜂鸣器（可发出音调）
+
+#define USE_DISPLAY_TYPE_HG1621 0 // HG1612/HG1621,屏幕驱动方式
+#define USE_DISPLAY_TYPE_AIP650 1 // AIP650,屏幕驱动方式
+#define USE_DISPLAY_TYPE USE_DISPLAY_TYPE_AIP650
 
 #define FLASH_USER_START_ADDR1 0x0800F000
 #define FLASH_USER_START_ADDR2 0x0800F800
