@@ -50,34 +50,31 @@ int main(void)
 {
   /* Reset of all peripherals, Initializes the Systick */
   HAL_Init();
-  HAL_Delay(400);                                    // 等待电源稳定
-  Drive_DisplayLcd_Gpio_Init();                      // 初始化LCD引脚
-  Drive_DisplayLcd_Init();                           // 初始化LCD
-  Drive_Buz_Init();                                  // 初始化蜂鸣器
-  Drive_SystemClockConfig(RCC_HSICALIBRATION_24MHz); // 初始化系统时钟
-  HAL_Delay(25);                                     // 等待电源稳定
-  Drive_FlashSaveInit();                             // 初始化历史温度
-  Drive_BUTTON_Init();                               // 初始化按键
-  Drive_MosSwitch_OFF();                             // 初始化mos管引脚
-  Drive_AdcGpio_init();                              // 初始化ADC引脚
-  Drive_AdcConfig();                                 // 初始化ADC
-  Drive_Lcd_AllIcon_init();                          // 初始化图标
-  Drive_Encoder_Init();                              // 初始化旋转编码器
-  // APP_shortCircuitProtection();                                 // 短路&开路判断
-  // Drive_Iwdg_init();                                            // 初始化看门狗
-  // Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE); // 启动音
+  HAL_Delay(400);                                               // 等待电源稳定
+  Drive_DisplayLcd_Gpio_Init();                                 // 初始化LCD引脚
+  Drive_DisplayLcd_Init();                                      // 初始化LCD
+  Drive_Buz_Init();                                             // 初始化蜂鸣器
+  Drive_SystemClockConfig(RCC_HSICALIBRATION_24MHz);            // 初始化系统时钟
+  HAL_Delay(25);                                                // 等待电源稳定
+  Drive_FlashSaveInit();                                        // 初始化历史温度
+  Drive_MosSwitch_OFF();                                        // 初始化mos管引脚
+  Drive_AdcGpio_init();                                         // 初始化ADC引脚
+  Drive_AdcConfig();                                            // 初始化ADC
+  Drive_Lcd_AllIcon_init();                                     // 初始化图标
+  Drive_Encoder_Init();                                         // 初始化旋转编码器
+  Drive_BUTTON_Init();                                          // 初始化按键
+  APP_shortCircuitProtection();                                 // 短路&开路判断
+  Drive_Iwdg_init();                                            // 初始化看门狗
+  Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE); // 启动音
   while (1)
   {
-    // app_timeSlice_Task(); // 时间片任务运行
+    app_timeSlice_Task(); // 时间片任务运行
 
-    /* AllStatus_S.adc_value[SOLDERING_TEMP210_NUM] = Drive_ADCConvert(SOLDERING_TEMP210_NUM);
-    AllStatus_S.adc_filter_value = (uint16_t)APP_FirFilter_ADC((float32_t)AllStatus_S.adc_value[SOLDERING_TEMP210_NUM]);
-    Lcd_SMG_DisplaySel(AllStatus_S.adc_filter_value, 1, uintVar);
-    Drive_DisplayLcd_sendData_Task();*/
+    // Drive_Lcd_SolderingTemp_Test(); // 测试发热芯温度
 
     // Drive_Lcd_Tid_Test();
 
-    Drive_Lcd_ShortCircuit_Test();
+    // Drive_Lcd_ShortCircuit_Test();
 
     // APP_Lcd_Test();
   }

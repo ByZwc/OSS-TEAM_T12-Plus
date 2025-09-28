@@ -337,4 +337,14 @@ void Drive_Lcd_ShortCircuit_Test(void)
     HAL_Delay(200);
 }
 
+void Drive_Lcd_SolderingTemp_Test(void)
+{
+    HAL_GPIO_WritePin(RES_ADC_SEL_GPIO_PORT, RES_ADC_SEL_GPIO_PIN, GPIO_PIN_RESET);
+    AllStatus_S.adc_value[SOLDERING_TEMP210_NUM] = Drive_ADCConvert(SOLDERING_TEMP210_NUM);
+    AllStatus_S.adc_filter_value = (uint16_t)APP_FirFilter_ADC((float32_t)AllStatus_S.adc_value[SOLDERING_TEMP210_NUM]);
+    Lcd_SMG_DisplaySel(AllStatus_S.adc_filter_value, 1, uintHex);
+    Drive_DisplayLcd_sendData_Task();
+    HAL_Delay(10);
+}
+
 #endif

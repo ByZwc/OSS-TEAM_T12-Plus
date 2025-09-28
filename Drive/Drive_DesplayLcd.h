@@ -55,5 +55,6 @@ extern void Drive_DisplayLcd_sendData_Task(void);
 void Drive_Lcd_Test(void);
 void Drive_Lcd_Tid_Test(void);
 void Drive_Lcd_ShortCircuit_Test(void);
+void Drive_Lcd_SolderingTemp_Test(void);
 
 #endif

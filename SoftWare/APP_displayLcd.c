@@ -402,25 +402,25 @@ void Drive_Lcd_AllIcon_init(void)
 static void Lcd_icon_cup_onOff(uint8_t onOff)
 {
     if (onOff)
-        displayMemory[0] |= 0x80;
+        displayMemory[2] |= 0x80;
     else
-        displayMemory[0] &= (~0x80);
+        displayMemory[2] &= (~0x80);
 }
 
 static void Lcd_icon_temp_onOff(uint8_t onOff)
 {
     if (onOff)
-        displayMemory[1] |= 0x80;
+        displayMemory[0] |= 0x80;
     else
-        displayMemory[1] &= (~0x80);
+        displayMemory[0] &= (~0x80);
 }
 
 static void Lcd_icon_buzz_onOff(uint8_t onOff)
 {
     if (onOff)
-        displayMemory[2] |= 0x80;
+        displayMemory[1] |= 0x80;
     else
-        displayMemory[2] &= (~0x80);
+        displayMemory[1] &= (~0x80);
 }
 
 void Lcd_icon_onOff(LCD_ICON_TYPE lcdIcon, uint8_t onOff)
@@ -637,49 +637,53 @@ void Drive_Lcd_AllIcon_init(void)
     }
     Lcd_smgDowm3_SetNum(0, 1);
     AllStatus_S.Seting.PNumber = 1;
-    Lcd_icon_onOff(icon_soldering, 0);
     if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
+    if (AllStatus_S.flashSave_s.BuzOnOff)
+        Lcd_icon_onOff(icon_buzz, 1);
+    else
+        Lcd_icon_onOff(icon_buzz, 0);
     Drive_DisplayLcd_sendData_Task();
 }
 void Lcd_smgDowm3_SetErrorNum(int16_t ErrorNum, uint8_t OnOff) // 显示错误码
 {
     if (OnOff)
     {
+        Lcd_smgDowm3_Close();
         switch (ErrorNum)
         {
         case ERROR_E0:
-            displayMemory[0] = 0;
-            displayMemory[1] = smg_hexArray[0x0E];
-            displayMemory[2] = smg_hexArray[ERROR_E0];
+            displayMemory[0] |= 0;
+            displayMemory[1] |= smg_hexArray[0x0E];
+            displayMemory[2] |= smg_hexArray[ERROR_E0];
             break;
         case ERROR_E1:
-            displayMemory[0] = 0;
-            displayMemory[1] = smg_hexArray[0x0E];
-            displayMemory[2] = smg_hexArray[ERROR_E1];
+            displayMemory[0] |= 0;
+            displayMemory[1] |= smg_hexArray[0x0E];
+            displayMemory[2] |= smg_hexArray[ERROR_E1];
             break;
         case ERROR_E2:
-            displayMemory[0] = 0;
-            displayMemory[1] = smg_hexArray[0x0E];
-            displayMemory[2] = smg_hexArray[ERROR_E2];
+            displayMemory[0] |= 0;
+            displayMemory[1] |= smg_hexArray[0x0E];
+            displayMemory[2] |= smg_hexArray[ERROR_E2];
             break;
         case ERROR_E3: // S-E
-            /* displayMemory[0] = 0;
-            displayMemory[1] = smg_hexArray[0x0E];
-            displayMemory[2] = smg_hexArray[ERROR_E3]; */
-            displayMemory[0] = 0x6D;
-            displayMemory[1] = 0x40;
-            displayMemory[2] = smg_hexArray[0x0E];
+            /* displayMemory[0] |= 0;
+            displayMemory[1] |= smg_hexArray[0x0E];
+            displayMemory[2] |= smg_hexArray[ERROR_E3]; */
+            displayMemory[0] |= 0x6D;
+            displayMemory[1] |= 0x40;
+            displayMemory[2] |= smg_hexArray[0x0E];
             break;
         case ERROR_SYSTEM_INIT:
-            displayMemory[0] = 0;
-            displayMemory[1] = smg_hexArray[0x0E];
-            displayMemory[2] = smg_hexArray[ERROR_SYSTEM_INIT];
+            displayMemory[0] |= 0;
+            displayMemory[1] |= smg_hexArray[0x0E];
+            displayMemory[2] |= smg_hexArray[ERROR_SYSTEM_INIT];
             break;
         case DRIVE_SLEEP:
-            displayMemory[0] = 0x40;
-            displayMemory[1] = 0x40;
-            displayMemory[2] = 0x40;
+            displayMemory[0] |= 0x40;
+            displayMemory[1] |= 0x40;
+            displayMemory[2] |= 0x40;
             break;
         }
     }
@@ -704,14 +708,14 @@ void APP_Lcd_PowerSetPoint_Task(void)
     }
 
     float32_t ratio = Pwmvalue / (float32_t)MAX_PWM_PRIOD;
-    uint8_t ledCount = (uint8_t)(ratio * 8.0f + 0.5f); 
+    uint8_t ledCount = (uint8_t)(ratio * 8.0f + 0.5f);
     if (ledCount > 8)
         ledCount = 8;
 
     if (ledCount == 0)
         displayMemory[3] = 0x00;
     else
-        displayMemory[3] = (uint8_t)((1U << ledCount) - 1U); 
+        displayMemory[3] = (uint8_t)((1U << ledCount) - 1U);
 }
 
 void APP_Lcd_Test(void)

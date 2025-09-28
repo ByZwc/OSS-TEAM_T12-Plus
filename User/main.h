@@ -88,8 +88,8 @@
 #define SLEEP_NUM 7                 // ADC序号
 
 #define BUZ_ON_TIME 2 // 单位：25ms(蜂鸣器)
-// #define FLASH_CHECK_VLUEb 0xAAAAAAAA // 校验值
-#define FLASH_CHECK_VLUEb 0xACACACAC // 校验值
+#define FLASH_CHECK_VLUEb 0xAAAAAAAA // 校验值
+//#define FLASH_CHECK_VLUEb 0xACACACAC // 校验值
 #define FIRST_SOLDERING_TEMP 300     // 初始化温度
 #define NEW_TEMP_SAVE_TIME 3         // 温度调节后保存时间
 #define PCB_PROTECT_TEMP 75.0f       // PCB保护温度
@@ -123,11 +123,21 @@
 #define MIN_TAR_TEMP 105  // 目标温度最小值（实际值=MIN_TAR_TEMP-5）
 #define N_TAR_TEMP_STEP 5 // 目标温度调节步进值
 
-#define CALIBRATION_TEMP_MAX 50   // 校准温度最大值
-#define CALIBRATION_TEMP_MIN -50  // 校准温度最小值
-#define SLEEP_DELAY_TIME_MIN 60   // 休眠延时最小值
-#define SLEEP_DELAY_TIME_MAX 999  // 休眠延时最大值
-#define SLEEP_DEEP_TEMP_RANGE 100 // 深度休眠温度阈值
+#define CALIBRATION_TEMP_MAX 50    // 校准温度最大值
+#define CALIBRATION_TEMP_MIN -50   // 校准温度最小值
+
+#define SLEEP_DELAY_TIME_MIN 0     // 休眠延时最小值
+#define SLEEP_DELAY_TIME_MAX 120   // 休眠延时最大值
+#define SLEEP_DEEP_TEMP_RANGE 90   // 深度休眠温度阈值
+
+#define PROTECT_TEMP_MIN 100       // 待机保护温度最小值
+#define PROTECT_TEMP_MAX 300       // 待机保护温度最大值
+
+#define STANDBY_DELAY_TIME_MIN 0   // 待机延时最小值
+#define STANDBY_DELAY_TIME_MAX 120 // 待机延时最大值
+
+#define STRONG_WARM_TIME_MIN 60   // 加强温度时间最小值
+#define STRONG_WARM_TIME_MAX 180  // 加强温度时间最大值
 
 #define SOLDERING_PID_I_CMD 15          // 积分引入温度阈值
 #define SOLDERING_PID_I_CLOSE 15        // 积分引出温度阈值
@@ -154,13 +164,16 @@
 #define PREINSTALL_TMEP350 2 // 预设
 #define PREINSTALL_TMEP400 3 // 预设
 
-#define OPTION_NUM 6 // 选项个数
-#define SMG_P01 1    // 选项P01(蜂鸣器开关)
-#define SMG_P02 2    // 选项P02(预设温度开关)
-#define SMG_P03 3    // 选项P03(校准温度)
-#define SMG_P04 4    // 选项P04(睡眠状态下，低于100℃后60s关闭背光)
-#define SMG_P05 5    // 选项P05(进入休眠等待时间60——999秒)
-#define SMG_P06 6    // 切换功率显示
+#define OPTION_NUM 9 // 选项个数
+#define SMG_P01 1    // 设置发热芯待机保护温度，可调节范围100-300摄氏度，默认200摄氏度。
+#define SMG_P02 2    // 待机模式时间，可调节范围1-120秒钟， oFF模式可关闭待机模式。
+#define SMG_P03 3    // 休眠模式时间，可调节范围1-120分钟， oFF模式可关闭休眠模式。
+#define SMG_P04 4    // 一键增强温度保持时间，可调节范围60-180秒钟。
+#define SMG_P05 5    // 声音状态，可调节打开/关闭机器声音。
+#define SMG_P06 6    // 发热芯温度校准，可调节校准参数-50到50摄氏度。
+#define SMG_P07 7    // (预设温度开关 ON：使用预设温度 OFF：关闭预设温度)。
+#define SMG_P08 8    // (睡眠状态屏下幕变暗，ON：开启该功能 OFF：关闭该功能)。
+#define SMG_P09 9    // (切换功率显示 ON：显示功率 OFF：显示电烙铁温度)。
 
 #define SMG_OFF 0
 #define SMG_ON 1
@@ -216,10 +229,14 @@ typedef struct
     uint32_t BuzOnOff;             // 蜂鸣器使能（修改后立即保存）
     uint32_t PreinstallTempOnOff;  // 预设温度使能（修改后立即保存）
     uint32_t PreinstallTempNum;    // 预设温度编号（修改后立即保存）
-    uint32_t BackgroundLightOnoff; // 睡眠关闭背光（修改后立即保存）
-    uint32_t SleepDelayTime;       // 休眠时间（修改后立即保存）单位s
+    uint32_t ProtectTemp;          // 待机保护温度（修改后立即保存）
+    uint32_t StandbyTime;          // 待机模式时间（修改后立即保存）单位s
+    uint32_t SleepDelayTime;       // 休眠时间（修改后立即保存）单位min
+    uint32_t KeepWarmTime;         // 一键增强温度保持时间（修改后立即保存）单位s
     uint32_t DisplayPowerOnOff;    // 功率显示开关（修改后立即保存）
+    uint32_t BackgroundLightOnoff; // 背光开关（修改后立即保存）
     uint32_t SaveNum;              // 保存次数
+
 } TYPEDEF_FLASHSAVE_S;
 
 typedef struct

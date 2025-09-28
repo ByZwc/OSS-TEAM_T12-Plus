@@ -185,20 +185,76 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
     switch (AllStatus_S.Seting.PNumber)
     {
     case SMG_P01:
-        if (AllStatus_S.flashSave_s.BuzOnOff)
-            AllStatus_S.flashSave_s.BuzOnOff = 0;
+        if (addOrSub)
+        {
+            if (AllStatus_S.flashSave_s.ProtectTemp < PROTECT_TEMP_MAX)
+                AllStatus_S.flashSave_s.ProtectTemp += app_Encoder_FastSetTemp();
+            if (AllStatus_S.flashSave_s.ProtectTemp > PROTECT_TEMP_MAX)
+                AllStatus_S.flashSave_s.ProtectTemp = PROTECT_TEMP_MAX;
+        }
         else
+        {
+            if (AllStatus_S.flashSave_s.ProtectTemp > PROTECT_TEMP_MIN)
+                AllStatus_S.flashSave_s.ProtectTemp -= app_Encoder_FastSetTemp();
+            if (AllStatus_S.flashSave_s.ProtectTemp < PROTECT_TEMP_MIN)
+                AllStatus_S.flashSave_s.ProtectTemp = PROTECT_TEMP_MIN;
+        }
+        break;
+    case SMG_P02: //
+        if (addOrSub)
+        {
+            if (AllStatus_S.flashSave_s.StandbyTime < STANDBY_DELAY_TIME_MAX)
+                AllStatus_S.flashSave_s.StandbyTime += 1;
+            if (AllStatus_S.flashSave_s.StandbyTime > STANDBY_DELAY_TIME_MAX)
+                AllStatus_S.flashSave_s.StandbyTime = STANDBY_DELAY_TIME_MAX;
+        }
+        else
+        {
+            if (AllStatus_S.flashSave_s.StandbyTime > STANDBY_DELAY_TIME_MIN)
+                AllStatus_S.flashSave_s.StandbyTime -= 1;
+        }
+    case SMG_P03: //
+        if (addOrSub)
+        {
+            if (AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MAX)
+                AllStatus_S.flashSave_s.SleepDelayTime += 1;
+            if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MAX)
+                AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MAX;
+        }
+        else
+        {
+            if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MIN)
+                AllStatus_S.flashSave_s.SleepDelayTime -= 1;
+        }
+    case SMG_P04: //
+        if (addOrSub)
+        {
+            if (AllStatus_S.flashSave_s.KeepWarmTime < STRONG_WARM_TIME_MAX)
+                AllStatus_S.flashSave_s.KeepWarmTime += 1;
+            if (AllStatus_S.flashSave_s.KeepWarmTime > STRONG_WARM_TIME_MAX)
+                AllStatus_S.flashSave_s.KeepWarmTime = STRONG_WARM_TIME_MAX;
+        }
+        else
+        {
+            if (AllStatus_S.flashSave_s.KeepWarmTime > STRONG_WARM_TIME_MIN)
+                AllStatus_S.flashSave_s.KeepWarmTime -= 1;
+            if (AllStatus_S.flashSave_s.KeepWarmTime < STRONG_WARM_TIME_MIN)
+                AllStatus_S.flashSave_s.KeepWarmTime = STRONG_WARM_TIME_MIN;
+        }
+    case SMG_P05: //
+        if (AllStatus_S.flashSave_s.BuzOnOff)
+        {
+            AllStatus_S.flashSave_s.BuzOnOff = 0;
+            Lcd_icon_onOff(icon_buzz, 0);
+        }
+        else
+        {
             AllStatus_S.flashSave_s.BuzOnOff = 1;
+            Lcd_icon_onOff(icon_buzz, 1);
+        }
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BuzOnOff, 1, DispOnOff);
         break;
-    case SMG_P02:
-        if (AllStatus_S.flashSave_s.PreinstallTempOnOff)
-            AllStatus_S.flashSave_s.PreinstallTempOnOff = 0;
-        else
-            AllStatus_S.flashSave_s.PreinstallTempOnOff = 1;
-        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1, DispOnOff);
-        break;
-    case SMG_P03:
+    case SMG_P06:
         if (addOrSub)
         {
             if (AllStatus_S.flashSave_s.calibration_temp < CALIBRATION_TEMP_MAX)
@@ -211,31 +267,22 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
         }
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.calibration_temp, 1, intVar);
         break;
-    case SMG_P04:
+    case SMG_P07:
+        if (AllStatus_S.flashSave_s.PreinstallTempOnOff)
+            AllStatus_S.flashSave_s.PreinstallTempOnOff = 0;
+        else
+            AllStatus_S.flashSave_s.PreinstallTempOnOff = 1;
+        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1, DispOnOff);
+        break;
+
+    case SMG_P08:
         if (AllStatus_S.flashSave_s.BackgroundLightOnoff)
             AllStatus_S.flashSave_s.BackgroundLightOnoff = 0;
         else
             AllStatus_S.flashSave_s.BackgroundLightOnoff = 1;
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1, DispOnOff);
         break;
-    case SMG_P05:
-        if (addOrSub)
-        {
-            if (AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MAX)
-                AllStatus_S.flashSave_s.SleepDelayTime += app_Encoder_FastSetTemp();
-            if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MAX)
-                AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MAX;
-        }
-        else
-        {
-            if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MIN + 5)
-                AllStatus_S.flashSave_s.SleepDelayTime -= app_Encoder_FastSetTemp();
-            if (AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MIN)
-                AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MIN;
-        }
-        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.SleepDelayTime, 1, uintVar);
-        break;
-    case SMG_P06:
+    case SMG_P09:
         if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
             AllStatus_S.flashSave_s.DisplayPowerOnOff = 0;
         else
@@ -379,7 +426,7 @@ void APP_SolderingOpenStateCheck_Task(void) // 函数调用周期（500ms）
     }
 }
 
-static void app_LcdBlink(uint8_t onOff)
+/* static void app_LcdBlink(uint8_t onOff)
 {
     switch (AllStatus_S.flashSave_s.PreinstallTempNum)
     {
@@ -410,6 +457,93 @@ void app_IconBlink_Task(void)
             app_LcdBlink(1);
         }
     }
+} */
+
+static void app_SelBlink(uint8_t onOff)
+{
+    if (onOff == 0)
+    {
+        // 闪烁显示参数序号
+        Lcd_SMG_DisplaySel(AllStatus_S.Seting.PNumber, 1, DispPNum);
+        return;
+    }
+
+    switch (AllStatus_S.Seting.PNumber)
+    {
+    case SMG_P01: // 保护温度
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.ProtectTemp, 1, uintVar);
+        break;
+    case SMG_P02: // 待机模式时间（0=OFF）
+        if (AllStatus_S.flashSave_s.StandbyTime > 0)
+            Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.StandbyTime, 1, uintVar);
+        else
+            Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.StandbyTime, 1, DispOnOff);
+        break;
+    case SMG_P03: // 休眠模式时间（0=OFF）
+        if (AllStatus_S.flashSave_s.SleepDelayTime > 0)
+            Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.SleepDelayTime, 1, uintVar);
+        else
+            Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.SleepDelayTime, 1, DispOnOff);
+        break;
+    case SMG_P04: // 保温时间
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.KeepWarmTime, 1, uintVar);
+        break;
+    case SMG_P05: // 蜂鸣器
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BuzOnOff, 1, DispOnOff);
+        break;
+    case SMG_P06: // 校准温度
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.calibration_temp, 1, intVar);
+        break;
+    case SMG_P07: // 预设温度功能开关
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1, DispOnOff);
+        break;
+    case SMG_P08: // 背光
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1, DispOnOff);
+        break;
+    case SMG_P09: // 功率/温度显示切换
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.DisplayPowerOnOff, 1, DispOnOff);
+        break;
+    default:
+        Lcd_SMG_DisplaySel(AllStatus_S.Seting.PNumber, 1, DispPNum);
+        break;
+    }
+}
+
+#define SELBLINK_CALL_INTERVAL_MS 100
+#define SELBLINK_PERIOD_SEC 2
+#define SELBLINK_PERIOD_MS (SELBLINK_PERIOD_SEC * 1000)
+#define SELBLINK_OFF0_MS 500                                    // onOff=0 初始保持时间
+#define SELBLINK_ON1_MS (SELBLINK_PERIOD_MS - SELBLINK_OFF0_MS) // onOff=1 保持时间
+#if (SELBLINK_OFF0_MS + SELBLINK_ON1_MS) > SELBLINK_PERIOD_MS
+#error "SELBLINK_OFF0_MS + SELBLINK_ON1_MS 不能大于 SELBLINK_PERIOD_MS"
+#endif
+
+void app_SelBlink_Task(void)
+{
+    static uint32_t elapsed_ms = 0;
+
+    if (!AllStatus_S.Seting.SetingPage)
+    {
+        elapsed_ms = 0;
+        return;
+    }
+
+    if (elapsed_ms < SELBLINK_OFF0_MS)
+    {
+        app_SelBlink(0);
+    }
+    else if (elapsed_ms < (SELBLINK_OFF0_MS + SELBLINK_ON1_MS))
+    {
+        app_SelBlink(1);
+    }
+    else
+    {
+        app_SelBlink(0);
+    }
+
+    elapsed_ms += SELBLINK_CALL_INTERVAL_MS;
+    if (elapsed_ms >= SELBLINK_PERIOD_MS)
+        elapsed_ms = 0;
 }
 
 void app_SolderingTempDisplay(void)
