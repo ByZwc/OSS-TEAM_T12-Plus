@@ -138,7 +138,7 @@ void app_pidControl(uint16_t TarTemp, float32_t CurTemp)
 
 void app_pidOutCmd(void)
 {
-    if (AllStatus_S.SolderingState > SOLDERING_STATE_OK)
+    if (AllStatus_S.SolderingState > SOLDERING_STATE_OK && AllStatus_S.SolderingState != SOLDERING_STATE_STANDBY)
     {
         AllStatus_S.pid_s.outCmd = 0;
         AllStatus_S.pid_s.pid_out = 0.0f;

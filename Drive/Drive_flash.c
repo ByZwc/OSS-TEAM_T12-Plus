@@ -169,7 +169,7 @@ static void Drive_FlashRed(TYPEDEF_FLASHSAVE_S *P_flashSave_s)
     if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MAX)
         AllStatus_S.flashSave_s.SleepDelayTime = 1;
     if (AllStatus_S.flashSave_s.StandbyTime > STANDBY_DELAY_TIME_MAX)
-        AllStatus_S.flashSave_s.StandbyTime = 30;
+        AllStatus_S.flashSave_s.StandbyTime = 60;
     if (AllStatus_S.flashSave_s.ProtectTemp < PROTECT_TEMP_MIN || AllStatus_S.flashSave_s.ProtectTemp > PROTECT_TEMP_MAX)
         AllStatus_S.flashSave_s.ProtectTemp = PROTECT_TEMP_MAX - 100;
     if (AllStatus_S.flashSave_s.PreinstallTempNum > 4)
@@ -209,7 +209,7 @@ static void Drive_FlashVerify(void)
         AllStatus_S.flashSave_s.DisplayPowerOnOff = 0;
         AllStatus_S.flashSave_s.KeepWarmTime = STRONG_WARM_TIME_MIN;
         AllStatus_S.flashSave_s.ProtectTemp = PROTECT_TEMP_MAX - 100;
-        AllStatus_S.flashSave_s.StandbyTime = 30;
+        AllStatus_S.flashSave_s.StandbyTime = 60;
         AllStatus_S.flashSave_s.SaveNum = 0;
         Drive_FlashSaveData();
     }

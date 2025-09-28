@@ -166,8 +166,8 @@
 
 #define OPTION_NUM 8 // 选项个数
 #define SMG_P01 1    // 设置发热芯待机保护温度，可调节范围100-300摄氏度，默认200摄氏度。
-#define SMG_P02 2    // 待机模式时间，可调节范围1-120秒钟， oFF模式可关闭待机模式。
-#define SMG_P03 3    // 休眠模式时间，可调节范围1-120分钟， oFF模式可关闭休眠模式。
+#define SMG_P02 2    // 待机模式时间，可调节范围0-120秒钟， OFF：关闭待机模式。
+#define SMG_P03 3    // 休眠模式时间，可调节范围0-120分钟， OFF：关闭休眠模式。
 #define SMG_P04 4    // 一键增强温度保持时间，可调节范围60-180秒钟。
 #define SMG_P05 5    // 声音状态，可调节打开/关闭机器声音。
 #define SMG_P06 6    // 发热芯温度校准，可调节校准参数-50到50摄氏度。
@@ -254,6 +254,7 @@ typedef enum
     SOLDERING_STATE_INIT_ERROR,     // MCU外设损坏
     SOLDERING_STATE_SHORTCIR_ERROR, // 短路状态
     SOLDERING_STATE_OPEN_ERROR,     // 开路状态
+    SOLDERING_STATE_STANDBY,        // 待机状态
     SOLDERING_STATE_SLEEP,          // 睡眠状态
     SOLDERING_STATE_SLEEP_DEEP,     // 深度睡眠状态
     SOLDERING_STATE_NTC_ERROR,      // NTC错误状态

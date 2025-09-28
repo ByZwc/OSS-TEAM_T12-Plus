@@ -640,7 +640,7 @@ static void app_GetAdcVlaue_soldering(void)
     AllStatus_S.data_filter[SOLDERING_TEMP210_NUM] = APP_kalmanFilter_solderingTemp(AllStatus_S.adc_conversionValue[SOLDERING_TEMP210_NUM], AllStatus_S.flashSave_s.TarTemp);
     AllStatus_S.CurTemp = AllStatus_S.data_filter[SOLDERING_TEMP210_NUM];
 
-    if (AllStatus_S.SolderingState != SOLDERING_STATE_OK && AllStatus_S.SolderingState != SOLDERING_STATE_SLEEP)
+    if (AllStatus_S.SolderingState != SOLDERING_STATE_OK && AllStatus_S.SolderingState != SOLDERING_STATE_STANDBY)
     {
         AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = app_DisplayFilter_RC(app_DisplayFilter_kalman(0, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
     }
@@ -677,17 +677,19 @@ float32_t app_DisplayFilter_RC(float32_t Cur, float32_t Tar)
     float32_t alpha = DISPLAY_FILTER_BASE_ALPHA;
     float32_t diff = fabsf(cur_temp - tar_temp);
 
-    if (AllStatus_S.OneState_TempOk)
+    if (AllStatus_S.OneState_TempOk && AllStatus_S.SolderingState != SOLDERING_STATE_STANDBY)
     {
         if ((uint32_t)AllStatus_S.pid_s.pid_out < AllStatus_S.pid_s.outPriod)
         {
-            for (int i = 1; i <= DISPLAY_FILTER_RESET_COUNT; i++) {
+            for (int i = 1; i <= DISPLAY_FILTER_RESET_COUNT; i++)
+            {
                 filtered[DISPLAY_FILTER_MUM - i] = Tar; // 加权
             }
         }
         if (!oneState)
         {
-            for (int i = 1; i <= DISPLAY_FILTER_MUM; i++) {
+            for (int i = 1; i <= DISPLAY_FILTER_MUM; i++)
+            {
                 filtered[DISPLAY_FILTER_MUM - i] = Tar; // 加权
             }
             oneState = 1;

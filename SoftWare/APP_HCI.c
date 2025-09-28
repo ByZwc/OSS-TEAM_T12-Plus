@@ -452,7 +452,7 @@ void app_IconBlink_Task(void)
 {
     static uint8_t onOff = 0;
     onOff = !onOff;
-    if ((!AllStatus_S.Seting.SetingPage) && (!(AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP)) && (!(AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP)))
+    if ((!AllStatus_S.Seting.SetingPage) && (!(AllStatus_S.SolderingState == SOLDERING_STATE_STANDBY)) && (!(AllStatus_S.SolderingState == SOLDERING_STATE_STANDBY_DEEP)))
     {
         if (AllStatus_S.flashSave_s.PreinstallTempOnOff)
         {
@@ -570,7 +570,7 @@ void app_SelBlink_Task(void)
             // 保持结束，进入正常闪烁逻辑，先清零相关计时
             pnum_hold_active = 0;
             pnum_hold_elapsed = 0;
-            elapsed_ms = 0;
+            elapsed_ms = SELBLINK_OFF0_MS / 2;
             optionchange_stable_ms = 0;
         }
         return;
@@ -658,7 +658,7 @@ void app_SolderingTempDisplay(void)
     static uint32_t last_display_temp_tick = 0;
 
     static uint32_t last_commonmodechange = 0;
-    static uint8_t  fast_refresh_active = 0;
+    static uint8_t fast_refresh_active = 0;
     static uint32_t fast_refresh_start_tick = 0;
     const uint32_t FAST_REFRESH_HOLD_MS = CODERING_CHANGE_DISPLAY_HOLD_MS;
 
@@ -702,7 +702,7 @@ void app_SolderingTempDisplay(void)
                 Lcd_SMG_DisplaySel(ERROR_E3, 1, DispErrorNum);
                 AllStatus_S.OneState_TempOk = 0;
                 break;
-            case SOLDERING_STATE_SLEEP: // 进入睡眠
+            case SOLDERING_STATE_STANDBY: // 进入待机
                 if ((uint32_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] < last_display_temp)
                 {
                     Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1, uintVar);
@@ -710,7 +710,7 @@ void app_SolderingTempDisplay(void)
                 }
                 AllStatus_S.OneState_TempOk = 0;
                 break;
-            case SOLDERING_STATE_SLEEP_DEEP: // 进入深度睡眠
+            case SOLDERING_STATE_SLEEP_DEEP: // 进入睡眠
                 Lcd_SMG_DisplaySel(DRIVE_SLEEP, 1, DispErrorNum);
                 AllStatus_S.OneState_TempOk = 0;
                 break;

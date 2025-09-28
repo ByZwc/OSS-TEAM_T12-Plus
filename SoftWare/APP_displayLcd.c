@@ -639,10 +639,12 @@ void Drive_Lcd_AllIcon_init(void)
     AllStatus_S.Seting.PNumber = 1;
     if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
         Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
+
     if (AllStatus_S.flashSave_s.BuzOnOff)
         Lcd_icon_onOff(icon_buzz, 1);
     else
         Lcd_icon_onOff(icon_buzz, 0);
+    Lcd_icon_onOff(icon_soldering, 0);
     Drive_DisplayLcd_sendData_Task();
 }
 void Lcd_smgDowm3_SetErrorNum(int16_t ErrorNum, uint8_t OnOff) // 显示错误码

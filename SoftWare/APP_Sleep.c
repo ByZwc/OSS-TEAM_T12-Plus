@@ -50,6 +50,7 @@ void APP_Sleep_Control_Task(void)
     static uint32_t stable_time_ms = 0;
     static uint8_t oneState = 0;
     uint32_t cur_adc_value = APP_Sleep_GetAdcValue();
+    // Lcd_SMG_DisplaySel(cur_adc_value, 1, uintHex);
 
     if (AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR)
     {
@@ -76,57 +77,105 @@ void APP_Sleep_Control_Task(void)
         }
     }
 
+    // 根据ADC稳定时间先进入待机，再按时间进入休眠；ADC大幅变化则退出并恢复原目标温度
     static uint8_t last_initialized = 0;
+    static uint8_t saved_tar_valid = 0;
+    static uint16_t saved_tar_temp = 0;
+    static uint32_t standby_elapsed_ms = 0; // 已处于待机后的累计时间
+
     if (!last_initialized)
     {
         last_adc_value = cur_adc_value;
         last_initialized = 1;
     }
 
+    uint32_t diff = (cur_adc_value >= last_adc_value) ? (cur_adc_value - last_adc_value) : (last_adc_value - cur_adc_value);
+
+    // 1. ADC变化超过范围：退出待机/休眠，恢复状态与目标温度
+    if (diff > SLEEP_ADC_STABLE_RANGE)
     {
-        uint32_t diff = (cur_adc_value >= last_adc_value) ? (cur_adc_value - last_adc_value) : (last_adc_value - cur_adc_value);
-        if (diff <= SLEEP_ADC_STABLE_RANGE)
+        stable_time_ms = 0;
+        standby_elapsed_ms = 0;
+
+        if (oneState) // 之前在待机或休眠
         {
-            // 累计稳定时间
-            if (stable_time_ms < AllStatus_S.flashSave_s.SleepDelayTime * 1000)
+            oneState = 0;
+            if (saved_tar_valid)
+            {
+                AllStatus_S.flashSave_s.TarTemp = saved_tar_temp; // 恢复原目标温度
+                saved_tar_valid = 0;
+            }
+            AllStatus_S.SolderingState = SOLDERING_STATE_OK;
+            Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
+            Lcd_icon_onOff(icon_soldering, 0);
+            if (!AllStatus_S.Seting.SetingPage)
+            {
+                if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
+                    Lcd_icon_onOff(icon_temp, 0);
+                else
+                    Lcd_icon_onOff(icon_temp, 1);
+            }
+        }
+
+        last_adc_value = cur_adc_value;
+    }
+    else
+    {
+        // 2. ADC稳定：累计稳定时间用于进入待机
+        uint32_t standby_threshold_ms = (uint32_t)AllStatus_S.flashSave_s.StandbyTime * 1000UL;
+        uint32_t sleep_delay_ms = (uint32_t)AllStatus_S.flashSave_s.SleepDelayTime * 60UL * 1000UL;
+
+        // 尚未进入待机/休眠
+        if (AllStatus_S.SolderingState != SOLDERING_STATE_STANDBY &&
+            AllStatus_S.SolderingState != SOLDERING_STATE_SLEEP_DEEP)
+        {
+            if (stable_time_ms < standby_threshold_ms)
                 stable_time_ms += SLEEP_ADC_TASK_PERIOD_MS;
 
-            // 达到休眠判定时间，进入休眠
-            if (stable_time_ms >= AllStatus_S.flashSave_s.SleepDelayTime * 1000)
+            if (standby_threshold_ms > 0 && stable_time_ms >= standby_threshold_ms)
             {
-                AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP;
+                // 进入待机
+                AllStatus_S.SolderingState = SOLDERING_STATE_STANDBY;
                 if (!oneState)
                 {
+                    oneState = 1;
+                    if (!saved_tar_valid)
+                    {
+                        saved_tar_temp = AllStatus_S.flashSave_s.TarTemp; // 记录原目标温度
+                        saved_tar_valid = 1;
+                    }
                     Lcd_icon_onOff(icon_soldering, 1);
-                    app_pidOutCmd();
+                    app_pidOutCmd(); // 关闭输出
                     Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
                     if (!AllStatus_S.Seting.SetingPage)
-                        Lcd_icon_onOff(icon_temp, 1); // 点亮℃图标
-                    oneState = 1;
+                        Lcd_icon_onOff(icon_temp, 1);
+                    standby_elapsed_ms = 0;
                 }
-                if (AllStatus_S.CurTemp < SLEEP_DEEP_TEMP_RANGE)
-                    AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP_DEEP;
+
+                // 3. 待机状态下保护温度限制
+                if (AllStatus_S.flashSave_s.ProtectTemp < AllStatus_S.flashSave_s.TarTemp)
+                    AllStatus_S.flashSave_s.TarTemp = AllStatus_S.flashSave_s.ProtectTemp;
             }
         }
         else
         {
-            // ADC变动，退出休眠
-            stable_time_ms = 0;
-            if (oneState)
+            // 已在待机或休眠
+            if (AllStatus_S.SolderingState == SOLDERING_STATE_STANDBY)
             {
-                oneState = 0;
-                AllStatus_S.SolderingState = SOLDERING_STATE_OK;
-                Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
-                Lcd_icon_onOff(icon_soldering, 0);
-                if (!AllStatus_S.Seting.SetingPage)
+                // 持续确保待机时目标温度不高于保护温度
+                if (AllStatus_S.flashSave_s.ProtectTemp < AllStatus_S.flashSave_s.TarTemp)
+                    AllStatus_S.flashSave_s.TarTemp = AllStatus_S.flashSave_s.ProtectTemp;
+
+                // 4. 待机时间超过 SleepDelayTime 分钟 -> 进入休眠
+                if (sleep_delay_ms > 0)
                 {
-                    if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
-                        Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
-                    else
-                        Lcd_icon_onOff(icon_temp, 1); // 点亮℃图标
+                    if (standby_elapsed_ms < sleep_delay_ms)
+                        standby_elapsed_ms += SLEEP_ADC_TASK_PERIOD_MS;
+
+                    if (standby_elapsed_ms >= sleep_delay_ms)
+                        AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP_DEEP;
                 }
             }
-            last_adc_value = cur_adc_value;
         }
     }
 }
