@@ -326,6 +326,14 @@ void Drive_Lcd_Tid_Test(void)
     HAL_Delay(500);
 }
 
+void Drive_Lcd_Sleep_Test(void)
+{
+    AllStatus_S.adc_value[SLEEP_NUM] = Drive_ADCConvert(SLEEP_NUM);
+    Lcd_SMG_DisplaySel(AllStatus_S.adc_value[SLEEP_NUM], 1, uintHex);
+    Drive_DisplayLcd_sendData_Task();
+    HAL_Delay(500);
+}
+
 void Drive_Lcd_ShortCircuit_Test(void)
 {
     HAL_GPIO_WritePin(MOSSWITCH_GPIOB_PORT, MOSSWITCH_GPIOB_PIN, GPIO_PIN_SET);

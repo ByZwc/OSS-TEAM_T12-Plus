@@ -194,10 +194,10 @@
 /* Exported variables prototypes ---------------------------------------------*/
 typedef struct
 {
-    uint8_t EncoderIsRun;
-    uint8_t TurnleftOrRight;
-    uint8_t ButtonIsTrigeer;
-    uint8_t ButtonIsLongPress;
+    uint32_t EncoderIsRun;
+    uint32_t TurnleftOrRight;
+    uint32_t ButtonIsTrigeer;
+    uint32_t ButtonIsLongPress;
 } TYPEDEF_ENCODER_S;
 
 typedef struct
@@ -241,10 +241,11 @@ typedef struct
 
 typedef struct
 {
-    uint8_t SetingPage;   // 设置页面
-    int8_t PNumber;       // P码
-    uint8_t SetingSel;    // 进入选择项
-    uint8_t OptionChange; // 选项选择
+    uint32_t SetingPage;       // 设置页面
+    int32_t PNumber;           // P码
+    uint32_t SetingSel;        // 进入选择项
+    uint32_t OptionChange;     // 选项选择
+    uint32_t CommonModeChange; // 普通模式选择
 } TYPEDEF_SETINNG_PAGE_S;
 
 typedef enum

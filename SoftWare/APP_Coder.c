@@ -14,8 +14,10 @@ static void app_Encoder_TurnRightOrLeft(uint8_t addOrSub)
     else
     {
         app_LcdCommonMode(addOrSub); // 未进入设设置页面，旋转设置温度
+        AllStatus_S.Seting.CommonModeChange++;
         AllStatus_S.OneState_TempOk = 0;
     }
+    
 }
 
 static uint8_t TarTempSaveInFlash_temp = 0;

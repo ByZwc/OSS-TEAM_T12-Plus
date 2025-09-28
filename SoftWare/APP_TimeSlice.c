@@ -50,11 +50,11 @@ void app_timeSlice_Task(void)
         app_ButtonCheck_Task();               // 按钮检测任务
         APP_Power_complementaryFilter_Task(); // 功率互补滤波任务
         app_SolderingTempDisplay();           // 烙铁头温度显示任务
-        app_Lcd_SolderingIcon_Blink_Task();   // 烙铁头图标闪烁任务
+        //app_Lcd_SolderingIcon_Blink_Task();   // 烙铁头图标闪烁任务
         APP_Lcd_PowerSetPoint_Task();         // 设置LCD电源点
         app_SelBlink_Task();                  // 选项闪烁
         Drive_DisplayLcd_sendData_Task();     // LCD显示信息发送任务
     }
-    APP_SleepBackLight_Task();   // 休眠背光亮度任务
+    // APP_SleepBackLight_Task();   // 休眠背光亮度任务
     app_Samp_electricity_Task(); // 采样负载电流任务
 }

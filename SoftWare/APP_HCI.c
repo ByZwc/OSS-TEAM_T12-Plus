@@ -615,6 +615,40 @@ void app_SelBlink_Task(void)
         elapsed_ms = 0;
 }
 
+// 编码器调节目标温度显示相关宏
+#define CODERING_CHANGE_DISPLAY_CALL_INTERVAL_MS 100 // 函数调用周期(ms)
+#define CODERING_CHANGE_DISPLAY_HOLD_MS 2000         // 设定温度保持显示时长(ms)
+
+void app_CoderingChangeTarTemp_display(void)
+{
+    // 函数调用周期：CODERING_CHANGE_DISPLAY_CALL_INTERVAL_MS
+    // CommonModeChange 变化后显示设定温度保持 CODERING_CHANGE_DISPLAY_HOLD_MS 毫秒，否则显示当前实时温度
+    static uint32_t last_common_change = 0;
+    static uint16_t hold_ms = 0;    // 已保持时间
+    static uint8_t hold_active = 0; // 1=保持显示设定温度
+
+    if (last_common_change != AllStatus_S.Seting.CommonModeChange)
+    {
+        last_common_change = AllStatus_S.Seting.CommonModeChange;
+        hold_ms = 0;
+        hold_active = 1;
+    }
+
+    if (hold_active)
+    {
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.TarTemp, 1, uintVar);
+        hold_ms += CODERING_CHANGE_DISPLAY_CALL_INTERVAL_MS;
+        if (hold_ms >= CODERING_CHANGE_DISPLAY_HOLD_MS)
+        {
+            hold_active = 0;
+        }
+    }
+    else
+    {
+        Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1, uintVar);
+    }
+}
+
 void app_SolderingTempDisplay(void)
 {
     static uint32_t last_display_temp = 0.0f; // 睡眠防抖动
@@ -622,13 +656,36 @@ void app_SolderingTempDisplay(void)
     static uint32_t display_temp_cnt = 0;
     static uint32_t display_temp_interval = 0;
     static uint32_t last_display_temp_tick = 0;
+
+    static uint32_t last_commonmodechange = 0;
+    static uint8_t  fast_refresh_active = 0;
+    static uint32_t fast_refresh_start_tick = 0;
+    const uint32_t FAST_REFRESH_HOLD_MS = CODERING_CHANGE_DISPLAY_HOLD_MS;
+
     float32_t diff = fabsf(AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] - (float32_t)AllStatus_S.flashSave_s.TarTemp);
     last_display_temp_tick++;
 
-    if (AllStatus_S.OneState_TempOk && ((uint32_t)AllStatus_S.pid_s.pid_out < AllStatus_S.pid_s.outPriod_max))
-        display_temp_interval = 10;
-    else
+    if (last_commonmodechange != AllStatus_S.Seting.CommonModeChange)
+    {
+        last_commonmodechange = AllStatus_S.Seting.CommonModeChange;
+        fast_refresh_active = 1;
+        fast_refresh_start_tick = uwTick;
+    }
+
+    if (fast_refresh_active)
+    {
         display_temp_interval = 1;
+        if ((uint32_t)(uwTick - fast_refresh_start_tick) >= FAST_REFRESH_HOLD_MS)
+            fast_refresh_active = 0;
+    }
+    else
+    {
+        if (AllStatus_S.OneState_TempOk &&
+            ((uint32_t)AllStatus_S.pid_s.pid_out < AllStatus_S.pid_s.outPriod_max))
+            display_temp_interval = 10;
+        else
+            display_temp_interval = 1;
+    }
 
     if (last_display_temp_tick - display_temp_cnt >= display_temp_interval)
     {
@@ -654,7 +711,7 @@ void app_SolderingTempDisplay(void)
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_SLEEP_DEEP: // 进入深度睡眠
-                Lcd_SMG_DisplaySel(DRIVE_SLEEP, 1, uintVar);
+                Lcd_SMG_DisplaySel(DRIVE_SLEEP, 1, DispErrorNum);
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_OK: // 正常状态
@@ -664,11 +721,9 @@ void app_SolderingTempDisplay(void)
                 // Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_ELECTRICITY_NUM], 1, uintVar);   // 实时值
                 // Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.Power, 1, uintVar); // 功率值(互补滤波)
                 // Lcd_SMG_DisplaySel(AllStatus_S.adc_value[SLEEP_NUM], 1, uintVar); // 睡眠ADC值
+                // Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.Power, 1, uintVar);
 
-                if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
-                    Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.Power, 1, uintVar);
-                else
-                    Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1, uintVar);
+                app_CoderingChangeTarTemp_display(); // 编码器调节目标温度显示
 
                 if (diff < 1.0f) // 首次到达温度蜂鸣器响应
                 {

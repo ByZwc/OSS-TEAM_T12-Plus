@@ -70,6 +70,8 @@ int main(void)
   {
     app_timeSlice_Task(); // 时间片任务运行
 
+    // Drive_Lcd_Sleep_Test();
+
     // Drive_Lcd_SolderingTemp_Test(); // 测试发热芯温度
 
     // Drive_Lcd_Tid_Test();

@@ -56,5 +56,5 @@ void Drive_Lcd_Test(void);
 void Drive_Lcd_Tid_Test(void);
 void Drive_Lcd_ShortCircuit_Test(void);
 void Drive_Lcd_SolderingTemp_Test(void);
-
+void Drive_Lcd_Sleep_Test(void);
 #endif
