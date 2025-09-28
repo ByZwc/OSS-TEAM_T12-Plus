@@ -682,13 +682,13 @@ float32_t app_DisplayFilter_RC(float32_t Cur, float32_t Tar)
         if ((uint32_t)AllStatus_S.pid_s.pid_out < AllStatus_S.pid_s.outPriod)
         {
             for (int i = 1; i <= DISPLAY_FILTER_RESET_COUNT; i++) {
-                filtered[DISPLAY_FILTER_MUM - i] = Tar; // 阶数切换
+                filtered[DISPLAY_FILTER_MUM - i] = Tar; // 加权
             }
         }
         if (!oneState)
         {
             for (int i = 1; i <= DISPLAY_FILTER_MUM; i++) {
-                filtered[DISPLAY_FILTER_MUM - i] = Tar; // 阶数切换
+                filtered[DISPLAY_FILTER_MUM - i] = Tar; // 加权
             }
             oneState = 1;
         }

@@ -9,12 +9,11 @@ static void app_Encoder_TurnRightOrLeft(uint8_t addOrSub)
     if (AllStatus_S.Seting.SetingPage)
     {
         app_EncoderSetData_LcdSettingPage(addOrSub); // 进入设设置页面进入项目，旋转设置P1~P3参数
-        Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
+        AllStatus_S.Seting.OptionChange++;
     }
     else
     {
         app_LcdCommonMode(addOrSub); // 未进入设设置页面，旋转设置温度
-        Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_ON, USE_BUZ_TYPE);
         AllStatus_S.OneState_TempOk = 0;
     }
 }
@@ -46,6 +45,7 @@ void app_Encoder_Task(void)
         AllStatus_S.encoder_s.EncoderIsRun = 0;
         TarTempSaveInFlash_temp = 0;
         app_Encoder_TurnRightOrLeft(AllStatus_S.encoder_s.TurnleftOrRight);
+        Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
     }
 }
 

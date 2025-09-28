@@ -8,7 +8,7 @@ typedef enum
     icon_300Temp,
     icon_SET,
     icon_soldering,
-    icon_cup,   //睡眠
+    icon_cup,   
     icon_temp,
     icon_buzz,
 

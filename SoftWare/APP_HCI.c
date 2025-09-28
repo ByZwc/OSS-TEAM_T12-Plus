@@ -200,7 +200,7 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
                 AllStatus_S.flashSave_s.ProtectTemp = PROTECT_TEMP_MIN;
         }
         break;
-    case SMG_P02: //
+    case SMG_P02:
         if (addOrSub)
         {
             if (AllStatus_S.flashSave_s.StandbyTime < STANDBY_DELAY_TIME_MAX)
@@ -213,7 +213,8 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
             if (AllStatus_S.flashSave_s.StandbyTime > STANDBY_DELAY_TIME_MIN)
                 AllStatus_S.flashSave_s.StandbyTime -= 1;
         }
-    case SMG_P03: //
+        break;
+    case SMG_P03:
         if (addOrSub)
         {
             if (AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MAX)
@@ -226,7 +227,8 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
             if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MIN)
                 AllStatus_S.flashSave_s.SleepDelayTime -= 1;
         }
-    case SMG_P04: //
+        break;
+    case SMG_P04:
         if (addOrSub)
         {
             if (AllStatus_S.flashSave_s.KeepWarmTime < STRONG_WARM_TIME_MAX)
@@ -241,7 +243,8 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
             if (AllStatus_S.flashSave_s.KeepWarmTime < STRONG_WARM_TIME_MIN)
                 AllStatus_S.flashSave_s.KeepWarmTime = STRONG_WARM_TIME_MIN;
         }
-    case SMG_P05: //
+        break;
+    case SMG_P05:
         if (AllStatus_S.flashSave_s.BuzOnOff)
         {
             AllStatus_S.flashSave_s.BuzOnOff = 0;
@@ -252,7 +255,6 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
             AllStatus_S.flashSave_s.BuzOnOff = 1;
             Lcd_icon_onOff(icon_buzz, 1);
         }
-        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BuzOnOff, 1, DispOnOff);
         break;
     case SMG_P06:
         if (addOrSub)
@@ -265,29 +267,24 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
             if (AllStatus_S.flashSave_s.calibration_temp > (CALIBRATION_TEMP_MIN))
                 AllStatus_S.flashSave_s.calibration_temp--;
         }
-        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.calibration_temp, 1, intVar);
         break;
     case SMG_P07:
         if (AllStatus_S.flashSave_s.PreinstallTempOnOff)
             AllStatus_S.flashSave_s.PreinstallTempOnOff = 0;
         else
             AllStatus_S.flashSave_s.PreinstallTempOnOff = 1;
-        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1, DispOnOff);
         break;
-
     case SMG_P08:
         if (AllStatus_S.flashSave_s.BackgroundLightOnoff)
             AllStatus_S.flashSave_s.BackgroundLightOnoff = 0;
         else
             AllStatus_S.flashSave_s.BackgroundLightOnoff = 1;
-        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1, DispOnOff);
         break;
     case SMG_P09:
         if (AllStatus_S.flashSave_s.DisplayPowerOnOff)
             AllStatus_S.flashSave_s.DisplayPowerOnOff = 0;
         else
             AllStatus_S.flashSave_s.DisplayPowerOnOff = 1;
-        // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.DisplayPowerOnOff, 1, DispOnOff);
         break;
     }
 }
@@ -316,28 +313,37 @@ void app_Lcd_DisplayPNumber_SettingPage(uint8_t addOrSub)
     switch (AllStatus_S.Seting.PNumber)
     {
     case SMG_P01:
-        Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
+        Lcd_icon_onOff(icon_temp, 1);
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BuzOnOff, 1, DispOnOff);
         break;
     case SMG_P02:
-        Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
+        Lcd_icon_onOff(icon_temp, 0);
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1, DispOnOff);
         break;
     case SMG_P03:
-        Lcd_icon_onOff(icon_temp, 1); // 点亮℃图标
+        Lcd_icon_onOff(icon_temp, 0);
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.calibration_temp, 1, intVar);
         break;
     case SMG_P04:
-        Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
+        Lcd_icon_onOff(icon_temp, 1);
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1, DispOnOff);
         break;
     case SMG_P05:
-        Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
+        Lcd_icon_onOff(icon_temp, 0);
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.SleepDelayTime, 1, uintVar);
         break;
     case SMG_P06:
-        Lcd_icon_onOff(icon_temp, 0); // 熄灭℃图标
+        Lcd_icon_onOff(icon_temp, 1);
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.DisplayPowerOnOff, 1, DispOnOff);
+        break;
+    case SMG_P07:
+        Lcd_icon_onOff(icon_temp, 0);
+        break;
+    case SMG_P08:
+        Lcd_icon_onOff(icon_temp, 0);
+        break;
+    case SMG_P09:
+        Lcd_icon_onOff(icon_temp, 0);
         break;
     }
 }
@@ -509,25 +515,88 @@ static void app_SelBlink(uint8_t onOff)
     }
 }
 
-#define SELBLINK_CALL_INTERVAL_MS 100
+#define SELBLINK_CALL_INTERVAL_MS 100 // 调用周期（100ms）
 #define SELBLINK_PERIOD_SEC 2
-#define SELBLINK_PERIOD_MS (SELBLINK_PERIOD_SEC * 1000)
-#define SELBLINK_OFF0_MS 500                                    // onOff=0 初始保持时间
+#define SELBLINK_PERIOD_MS (SELBLINK_PERIOD_SEC * 1000)         // 闪烁周期
+#define SELBLINK_OFF0_MS 1000                                   // onOff=0 初始保持时间
 #define SELBLINK_ON1_MS (SELBLINK_PERIOD_MS - SELBLINK_OFF0_MS) // onOff=1 保持时间
 #if (SELBLINK_OFF0_MS + SELBLINK_ON1_MS) > SELBLINK_PERIOD_MS
 #error "SELBLINK_OFF0_MS + SELBLINK_ON1_MS 不能大于 SELBLINK_PERIOD_MS"
 #endif
-
+#define SELBLINK_NOCHANGE_TIMEOUT_MS (SELBLINK_PERIOD_MS) // 2秒内无变化才开始闪烁
+#define SELBLINK_OPTIONCHANGE_FORCE_ON 1                  // OptionChange变化时强制显示参数
+#define SELBLINK_PNUMBER_CHANGE_SHOW_INDEX 1              // PNumber变化时立即显示序号(onOff=0)
+#define PNUMBER_CHANGE_HOLD_MS 1000                       // 参数编号变化后保持显示序号的时间（ms）
 void app_SelBlink_Task(void)
 {
-    static uint32_t elapsed_ms = 0;
+    static uint32_t elapsed_ms = 0;             // 闪烁计时（进入闪烁周期后）
+    static uint16_t last_pnumber = 0xFFFF;      // 上次参数编号
+    static uint32_t last_optionchange = 0;      // 上次 OptionChange 值
+    static uint32_t optionchange_stable_ms = 0; // OptionChange 未变化累计时间(ms)
+    static uint8_t pnum_hold_active = 0;        // 1=处于参数编号变化后的保持阶段
+    static uint32_t pnum_hold_elapsed = 0;      // 已保持时间
 
     if (!AllStatus_S.Seting.SetingPage)
     {
         elapsed_ms = 0;
+        last_pnumber = 0xFFFF;
+        optionchange_stable_ms = 0;
+        last_optionchange = AllStatus_S.Seting.OptionChange;
+        pnum_hold_active = 0;
+        pnum_hold_elapsed = 0;
         return;
     }
 
+    // 参数编号变化：进入“保持显示序号1秒”阶段
+    if (last_pnumber != AllStatus_S.Seting.PNumber)
+    {
+        last_pnumber = AllStatus_S.Seting.PNumber;
+        elapsed_ms = 0; // 闪烁周期计时复位（真正开始闪烁要等保持阶段结束）
+        optionchange_stable_ms = 0;
+        last_optionchange = AllStatus_S.Seting.OptionChange;
+        pnum_hold_active = 1;
+        pnum_hold_elapsed = 0;
+        app_SelBlink(0); // 立即显示序号
+        return;
+    }
+
+    // 仍在“参数编号变化后保持阶段”
+    if (pnum_hold_active)
+    {
+        app_SelBlink(0); // 始终显示序号
+        pnum_hold_elapsed += SELBLINK_CALL_INTERVAL_MS;
+        if (pnum_hold_elapsed >= PNUMBER_CHANGE_HOLD_MS)
+        {
+            // 保持结束，进入正常闪烁逻辑，先清零相关计时
+            pnum_hold_active = 0;
+            pnum_hold_elapsed = 0;
+            elapsed_ms = 0;
+            optionchange_stable_ms = 0;
+        }
+        return;
+    }
+
+    // OptionChange 有变化：强制显示当前参数值(onOff=1)，并重新计时（此时已不在保持阶段）
+    if (last_optionchange != AllStatus_S.Seting.OptionChange)
+    {
+        last_optionchange = AllStatus_S.Seting.OptionChange;
+        optionchange_stable_ms = 0;
+        elapsed_ms = 0;  // 重新进入前置显示阶段（随后按 2 秒无操作再闪烁）
+        app_SelBlink(1); // 显示参数内容
+        return;
+    }
+
+    // 累计 OptionChange 未变化时间
+    optionchange_stable_ms += SELBLINK_CALL_INTERVAL_MS;
+
+    // 2秒内有过变化（或尚未满2秒稳定）：持续显示参数内容，不闪烁
+    if (optionchange_stable_ms < SELBLINK_NOCHANGE_TIMEOUT_MS)
+    {
+        app_SelBlink(1);
+        return;
+    }
+
+    // 进入闪烁周期
     if (elapsed_ms < SELBLINK_OFF0_MS)
     {
         app_SelBlink(0);

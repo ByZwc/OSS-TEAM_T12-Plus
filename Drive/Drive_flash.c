@@ -157,7 +157,7 @@ static void Drive_FlashRed(TYPEDEF_FLASHSAVE_S *P_flashSave_s)
     AllStatus_S.flashSave_s.BackgroundLightOnoff = P_flashSave_s->BackgroundLightOnoff;
     AllStatus_S.flashSave_s.SleepDelayTime = P_flashSave_s->SleepDelayTime;
     AllStatus_S.flashSave_s.SaveNum = P_flashSave_s->SaveNum;
-    AllStatus_S.flashSave_s.DisplayPowerOnOff = P_flashSave_s->DisplayPowerOnOff;
+    AllStatus_S.flashSave_s.DisplayPowerOnOff = 0; // P_flashSave_s->DisplayPowerOnOff;
     AllStatus_S.flashSave_s.KeepWarmTime = P_flashSave_s->KeepWarmTime;
     AllStatus_S.flashSave_s.ProtectTemp = P_flashSave_s->ProtectTemp;
     AllStatus_S.flashSave_s.StandbyTime = P_flashSave_s->StandbyTime;

@@ -399,7 +399,7 @@ void Drive_Lcd_AllIcon_init(void)
 #endif
 
 #if USE_DISPLAY_TYPE == USE_DISPLAY_TYPE_AIP650
-static void Lcd_icon_cup_onOff(uint8_t onOff)
+static void Lcd_icon_soldering_onOff(uint8_t onOff)
 {
     if (onOff)
         displayMemory[2] |= 0x80;
@@ -427,8 +427,8 @@ void Lcd_icon_onOff(LCD_ICON_TYPE lcdIcon, uint8_t onOff)
 {
     switch (lcdIcon)
     {
-    case icon_cup:
-        Lcd_icon_cup_onOff(onOff);
+    case icon_soldering:
+        Lcd_icon_soldering_onOff(onOff);
         break;
     case icon_temp:
         Lcd_icon_temp_onOff(onOff);
