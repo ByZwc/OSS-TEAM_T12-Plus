@@ -43,7 +43,7 @@
 #define AIP650E_SET_ADDR3 0x6C
 #define AIP650E_SET_ADDR4 0x6E
 #define AIP650E_SET_BRIGHTNESS_MAX 0x71
-#define AIP650E_SET_BRIGHTNESS_LOW 0x8A
+#define AIP650E_SET_BRIGHTNESS_LOW 0x00
 /******************************************************************************* */
 
 extern uint8_t displayMemory[ALL_SEG_NUM];

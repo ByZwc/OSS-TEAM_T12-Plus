@@ -43,6 +43,45 @@ static float32_t APP_Sleep_TempCheck(void)
     return minRange + (tar - minT) * (maxRange - minRange) / (maxT - minT);
 }
 
+// 图标闪烁相关：任务调用周期为 SLEEP_ADC_TASK_PERIOD_MS (250ms)
+// 设置图标翻转（Toggle）周期（ms），应为 SLEEP_ADC_TASK_PERIOD_MS 的整数倍
+#ifndef SLEEP_ICON_BLINK_TOGGLE_PERIOD_MS
+#define SLEEP_ICON_BLINK_TOGGLE_PERIOD_MS 500u // 每500ms翻转一次(=2次任务调用)
+#endif
+
+#if (SLEEP_ICON_BLINK_TOGGLE_PERIOD_MS < SLEEP_ADC_TASK_PERIOD_MS)
+#error "SLEEP_ICON_BLINK_TOGGLE_PERIOD_MS must >= SLEEP_ADC_TASK_PERIOD_MS"
+#endif
+
+static void APP_SleepIconBlink(void)
+{
+    static uint16_t elapsed_ms = 0;
+    static uint8_t icon_on = 0;
+
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_STANDBY)
+    {
+        elapsed_ms += SLEEP_ADC_TASK_PERIOD_MS;
+        if (elapsed_ms >= SLEEP_ICON_BLINK_TOGGLE_PERIOD_MS)
+        {
+            elapsed_ms = 0;
+            icon_on = !icon_on;
+            Lcd_icon_onOff(icon_soldering, icon_on);
+        }
+    }
+    else
+    {
+        elapsed_ms = 0;
+        icon_on = 0;
+
+        if (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP ||
+            AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP ||
+            AllStatus_S.SolderingState == SOLDERING_STATE_OK)
+        {
+            Lcd_icon_onOff(icon_soldering, 0);
+        }
+    }
+}
+
 // 休眠控制任务，每250ms调用一次
 void APP_Sleep_Control_Task(void)
 {
@@ -110,6 +149,7 @@ void APP_Sleep_Control_Task(void)
             AllStatus_S.OneState_TempOk = 0;
             Lcd_icon_onOff(icon_soldering, 0);
             Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
+            Drive_DisplayLcd_Init();
         }
         last_adc_value = cur_adc_value;
         return;
@@ -134,14 +174,17 @@ void APP_Sleep_Control_Task(void)
             if (standby_threshold_ms > 0 && stable_time_ms >= standby_threshold_ms)
             {
                 AllStatus_S.SolderingState = SOLDERING_STATE_STANDBY;
-                AllStatus_S.OneState_TempOk = 0;
+                if (AllStatus_S.Old_TarTemp > AllStatus_S.flashSave_s.ProtectTemp)
+                    AllStatus_S.OneState_TempOk = 0;
                 standby_elapsed_ms = 0;
                 Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
             }
         }
+        if (standby_threshold_ms > 0)
+            APP_SleepIconBlink(); // 待机闪烁图标
         if (standby_threshold_ms == 0 || AllStatus_S.SolderingState == SOLDERING_STATE_STANDBY)
         {
-            // 3. 待机累计时间 -> 进入休眠
+            // 3. 待机累计时间 -> 进入休眠状态
             if (sleep_delay_ms > 0 && standby_elapsed_ms < sleep_delay_ms)
             {
                 standby_elapsed_ms += SLEEP_ADC_TASK_PERIOD_MS;
@@ -166,8 +209,7 @@ void APP_Sleep_Control_Task(void)
         break;
 
     case SOLDERING_STATE_SLEEP_DEEP:
-    default:
-        // 深度睡眠下等待外部唤醒（由第1条规则处理）
+        APP_SleepBackLight_Task();
         break;
     }
 }
@@ -217,7 +259,7 @@ uint32_t APP_Sleep_PowerFilter(void)
     return (uint32_t)(out + 0.5f);
 }
 
-#define SLEEP_BACKLIGHT_FLASH_PERIOD_MS 10 // 背光闪烁周期（ms）
+/* #define SLEEP_BACKLIGHT_FLASH_PERIOD_MS 10 // 背光闪烁周期（ms）
 #define SLEEP_BACKLIGHT_ON_TIME_MS 3       // 10ms周期内点亮时间（ms）
 
 void APP_SleepBackLight_Task(void)
@@ -239,5 +281,14 @@ void APP_SleepBackLight_Task(void)
     {
         ms_counter = 0;
         Drive_BackLed_OnOff(1); // 常亮背光
+    }
+} */
+
+void APP_SleepBackLight_Task(void)
+{
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP &&
+        AllStatus_S.flashSave_s.BackgroundLightOnoff)
+    {
+        Drive_DisplayLcd_SetBrightnessLow();
     }
 }

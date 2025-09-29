@@ -17,4 +17,5 @@ void app_IconBlink_Task(void);               // 选项闪烁
 void app_SelBlink_Task(void);                // 选项闪烁
 void app_SolderingTempDisplay(void);         // 实时温度显示
 void APP_SleepCloseBackLight_Task(void);     // 休眠关闭背光
+void APP_OneKeyStrongTemp_Task(void);        // 一键强温
 #endif

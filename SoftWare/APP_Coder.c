@@ -13,27 +13,30 @@ static void app_Encoder_TurnRightOrLeft(uint8_t addOrSub)
     }
     else
     {
-        app_LcdCommonMode(addOrSub); // 未进入设设置页面，旋转设置温度
-        AllStatus_S.Seting.CommonModeChange++;
-        AllStatus_S.OneState_TempOk = 0;
+        if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
+        {
+            app_LcdCommonMode(addOrSub); // 未进入设设置页面，旋转设置温度
+            AllStatus_S.Seting.CommonModeChange++;
+            AllStatus_S.OneState_TempOk = 0;
+        }
     }
 }
 
 static uint8_t TarTempSaveInFlash_temp = 0;
 void APP_TarTempSaveInFlash_Task(void)
 {
-
-    if (AllStatus_S.Old_TarTemp != AllStatus_S.flashSave_s.TarTemp && AllStatus_S.SolderingState == SOLDERING_STATE_OK)
-    {
-        TarTempSaveInFlash_temp++;
-        if (TarTempSaveInFlash_temp > NEW_TEMP_SAVE_TIME)
+    if ((!AllStatus_S.encoder_s.OneKeyStrongTemp) && AllStatus_S.SolderingState == SOLDERING_STATE_OK)
+        if (AllStatus_S.Old_TarTemp != AllStatus_S.flashSave_s.TarTemp)
         {
-            Drive_FlashSaveData();
+            TarTempSaveInFlash_temp++;
+            if (TarTempSaveInFlash_temp > NEW_TEMP_SAVE_TIME)
+            {
+                Drive_FlashSaveData();
 
-            AllStatus_S.Old_TarTemp = AllStatus_S.flashSave_s.TarTemp;
-            TarTempSaveInFlash_temp = 0;
+                AllStatus_S.Old_TarTemp = AllStatus_S.flashSave_s.TarTemp;
+                TarTempSaveInFlash_temp = 0;
+            }
         }
-    }
 }
 
 // 编码器任务
@@ -68,12 +71,18 @@ static void app_ButtonDispose(void)
             AllStatus_S.Seting.SetingPage = 1;
         }
     }
-    if (AllStatus_S.Seting.SetingPage) // 短按事件
+
+    if (AllStatus_S.encoder_s.ButtonIsTrigeer)
     {
-        if (AllStatus_S.encoder_s.ButtonIsTrigeer)
+        AllStatus_S.encoder_s.ButtonIsTrigeer = 0;
+        if (AllStatus_S.Seting.SetingPage) // 短按事件
         {
-            AllStatus_S.encoder_s.ButtonIsTrigeer = 0;
             app_Lcd_DisplayPNumber_SettingPage(1);
+        }
+        else
+        {
+            if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
+                AllStatus_S.encoder_s.OneKeyStrongTemp = 1;
         }
     }
 }

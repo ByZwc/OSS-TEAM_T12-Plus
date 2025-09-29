@@ -710,7 +710,7 @@ void APP_Lcd_PowerSetPoint_Task(void)
     }
 
     float32_t ratio = Pwmvalue / (float32_t)MAX_PWM_PRIOD;
-    uint8_t ledCount = (uint8_t)(ratio * 8.0f + 0.5f);
+    uint8_t ledCount = (uint8_t)(ratio * 8.0f + 0.8f);
     if (ledCount > 8)
         ledCount = 8;
 

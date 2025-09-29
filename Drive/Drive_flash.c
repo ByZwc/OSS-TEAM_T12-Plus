@@ -158,7 +158,7 @@ static void Drive_FlashRed(TYPEDEF_FLASHSAVE_S *P_flashSave_s)
     AllStatus_S.flashSave_s.SleepDelayTime = P_flashSave_s->SleepDelayTime;
     AllStatus_S.flashSave_s.SaveNum = P_flashSave_s->SaveNum;
     AllStatus_S.flashSave_s.DisplayPowerOnOff = 0; // P_flashSave_s->DisplayPowerOnOff;
-    AllStatus_S.flashSave_s.KeepWarmTime = P_flashSave_s->KeepWarmTime;
+    AllStatus_S.flashSave_s.KeepStrongTempTime = P_flashSave_s->KeepStrongTempTime;
     AllStatus_S.flashSave_s.ProtectTemp = P_flashSave_s->ProtectTemp;
     AllStatus_S.flashSave_s.StandbyTime = P_flashSave_s->StandbyTime;
     // 参数合理性检查
@@ -207,7 +207,7 @@ static void Drive_FlashVerify(void)
         AllStatus_S.flashSave_s.BackgroundLightOnoff = 0;
         AllStatus_S.flashSave_s.SleepDelayTime = 1;
         AllStatus_S.flashSave_s.DisplayPowerOnOff = 0;
-        AllStatus_S.flashSave_s.KeepWarmTime = STRONG_WARM_TIME_MIN;
+        AllStatus_S.flashSave_s.KeepStrongTempTime = STRONG_WARM_TIME_MIN;
         AllStatus_S.flashSave_s.ProtectTemp = PROTECT_TEMP_MAX - 100;
         AllStatus_S.flashSave_s.StandbyTime = 60;
         AllStatus_S.flashSave_s.SaveNum = 0;

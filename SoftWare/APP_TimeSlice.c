@@ -42,6 +42,7 @@ void app_timeSlice_Task(void)
         app_PcbTempProtect_Task();     // PCB温度过高保护
         APP_TarTempSaveInFlash_Task(); // 保存历史温度（非预设模式下）
         // APP_SleepCloseBackLight_Task(); // 休眠关闭背光
+        APP_OneKeyStrongTemp_Task(); // 一键强温
     }
 
     if (uwTick - last_ButtonTick >= BUTTON_TASK_INTERVAL)

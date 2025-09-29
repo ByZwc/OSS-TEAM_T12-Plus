@@ -119,9 +119,10 @@
 #define T245_PID_MAX_CHANGE_PRIOD 1000
 #define T12_PID_MAX_CHANGE_PRIOD 2000
 
-#define MAX_TAR_TEMP 450  // 目标温度最大值
-#define MIN_TAR_TEMP 105  // 目标温度最小值（实际值=MIN_TAR_TEMP-5）
-#define N_TAR_TEMP_STEP 5 // 目标温度调节步进值
+#define MAX_STRONG_TEMP 450 // 强温最大值
+#define MAX_TAR_TEMP 480    // 目标温度最大值
+#define MIN_TAR_TEMP 105    // 目标温度最小值（实际值=MIN_TAR_TEMP-5）
+#define N_TAR_TEMP_STEP 5   // 目标温度调节步进值
 
 #define CALIBRATION_TEMP_MAX 50  // 校准温度最大值
 #define CALIBRATION_TEMP_MIN -50 // 校准温度最小值
@@ -194,10 +195,11 @@
 /* Exported variables prototypes ---------------------------------------------*/
 typedef struct
 {
-    uint32_t EncoderIsRun;
-    uint32_t TurnleftOrRight;
-    uint32_t ButtonIsTrigeer;
-    uint32_t ButtonIsLongPress;
+    uint32_t EncoderIsRun;      // 编码器运行状态
+    uint32_t TurnleftOrRight;   // 旋转方向
+    uint32_t ButtonIsTrigeer;   // 短按事件
+    uint32_t ButtonIsLongPress; // 长按事件
+    uint32_t OneKeyStrongTemp;  // 一键增强温度选择
 } TYPEDEF_ENCODER_S;
 
 typedef struct
@@ -232,7 +234,7 @@ typedef struct
     uint32_t ProtectTemp;          // 待机保护温度（修改后立即保存）
     uint32_t StandbyTime;          // 待机模式时间（修改后立即保存）单位s
     uint32_t SleepDelayTime;       // 休眠时间（修改后立即保存）单位min
-    uint32_t KeepWarmTime;         // 一键增强温度保持时间（修改后立即保存）单位s
+    uint32_t KeepStrongTempTime;   // 一键增强温度保持时间（修改后立即保存）单位s
     uint32_t DisplayPowerOnOff;    // 功率显示开关（修改后立即保存）
     uint32_t BackgroundLightOnoff; // 背光开关（修改后立即保存）
     uint32_t SaveNum;              // 保存次数

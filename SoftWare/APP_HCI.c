@@ -235,17 +235,17 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
     case SMG_P04:
         if (addOrSub)
         {
-            if (AllStatus_S.flashSave_s.KeepWarmTime < STRONG_WARM_TIME_MAX)
-                AllStatus_S.flashSave_s.KeepWarmTime += app_Encoder_FastSetTemp();
-            if (AllStatus_S.flashSave_s.KeepWarmTime > STRONG_WARM_TIME_MAX)
-                AllStatus_S.flashSave_s.KeepWarmTime = STRONG_WARM_TIME_MAX;
+            if (AllStatus_S.flashSave_s.KeepStrongTempTime < STRONG_WARM_TIME_MAX)
+                AllStatus_S.flashSave_s.KeepStrongTempTime += app_Encoder_FastSetTemp();
+            if (AllStatus_S.flashSave_s.KeepStrongTempTime > STRONG_WARM_TIME_MAX)
+                AllStatus_S.flashSave_s.KeepStrongTempTime = STRONG_WARM_TIME_MAX;
         }
         else
         {
-            if (AllStatus_S.flashSave_s.KeepWarmTime > STRONG_WARM_TIME_MIN)
-                AllStatus_S.flashSave_s.KeepWarmTime -= app_Encoder_FastSetTemp();
-            if (AllStatus_S.flashSave_s.KeepWarmTime < STRONG_WARM_TIME_MIN)
-                AllStatus_S.flashSave_s.KeepWarmTime = STRONG_WARM_TIME_MIN;
+            if (AllStatus_S.flashSave_s.KeepStrongTempTime > STRONG_WARM_TIME_MIN)
+                AllStatus_S.flashSave_s.KeepStrongTempTime -= app_Encoder_FastSetTemp();
+            if (AllStatus_S.flashSave_s.KeepStrongTempTime < STRONG_WARM_TIME_MIN)
+                AllStatus_S.flashSave_s.KeepStrongTempTime = STRONG_WARM_TIME_MIN;
         }
         break;
     case SMG_P05:
@@ -496,7 +496,7 @@ static void app_SelBlink(uint8_t onOff)
             Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.SleepDelayTime, 1, DispOnOff);
         break;
     case SMG_P04: // 保温时间
-        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.KeepWarmTime, 1, uintVar);
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.KeepStrongTempTime, 1, uintVar);
         break;
     case SMG_P05: // 蜂鸣器
         Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BuzOnOff, 1, DispOnOff);
@@ -707,7 +707,7 @@ void app_SolderingTempDisplay(void)
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_STANDBY: // 进入待机
-                if (AllStatus_S.flashSave_s.StandbyTime)
+                if (AllStatus_S.flashSave_s.StandbyTime && (AllStatus_S.Old_TarTemp > AllStatus_S.flashSave_s.ProtectTemp))
                 {
                     AllStatus_S.flashSave_s.TarTemp = AllStatus_S.flashSave_s.ProtectTemp;
                     diff = fabsf(AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] - (float32_t)AllStatus_S.flashSave_s.TarTemp);
@@ -774,5 +774,54 @@ void APP_SleepCloseBackLight_Task(void)
     else
     {
         AllStatus_S.sleep_cnt = 0;
+    }
+}
+
+void APP_OneKeyStrongTemp_Task(void)
+{
+    static uint8_t active = 0;   // 1=已进入强温提升阶段
+    static uint16_t elapsed = 0; // 已维持的秒数（函数1s调用一次）
+
+    // 若当前目标温度已超过最大强温限制，则退出强温模式
+    if (AllStatus_S.flashSave_s.TarTemp > MAX_STRONG_TEMP)
+    {
+        AllStatus_S.encoder_s.OneKeyStrongTemp = 0;
+        active = 0;
+        elapsed = 0;
+        return;
+    }
+
+    if (AllStatus_S.encoder_s.OneKeyStrongTemp)
+    {
+        if (!active)
+        {
+            AllStatus_S.flashSave_s.TarTemp += 50;
+            AllStatus_S.OneState_TempOk = 0;
+            active = 1;
+            elapsed = 0;
+        }
+        else
+        {
+            elapsed++;
+            if (elapsed >= AllStatus_S.flashSave_s.KeepStrongTempTime)
+            {
+                if (AllStatus_S.flashSave_s.TarTemp >= 50)
+                    AllStatus_S.flashSave_s.TarTemp -= 50;
+                AllStatus_S.encoder_s.OneKeyStrongTemp = 0;
+                AllStatus_S.OneState_TempOk = 0;
+                active = 0;
+                elapsed = 0;
+            }
+        }
+    }
+    else
+    {
+        if (active)
+        {
+            if (AllStatus_S.flashSave_s.TarTemp >= 50)
+                AllStatus_S.flashSave_s.TarTemp -= 50;
+            active = 0;
+            elapsed = 0;
+        }
     }
 }
