@@ -128,7 +128,7 @@
 
 #define SLEEP_DELAY_TIME_MIN 0   // 休眠延时最小值
 #define SLEEP_DELAY_TIME_MAX 120 // 休眠延时最大值
-#define SLEEP_DEEP_TEMP_RANGE 90 // 深度休眠温度阈值
+#define SLEEP_DEEP_TEMP_RANGE 55 // 深度休眠温度阈值
 
 #define PROTECT_TEMP_MIN 100 // 待机保护温度最小值
 #define PROTECT_TEMP_MAX 300 // 待机保护温度最大值
@@ -255,7 +255,7 @@ typedef enum
     SOLDERING_STATE_SHORTCIR_ERROR, // 短路状态
     SOLDERING_STATE_OPEN_ERROR,     // 开路状态
     SOLDERING_STATE_STANDBY,        // 待机状态
-    SOLDERING_STATE_SLEEP,          // 睡眠状态
+    SOLDERING_STATE_SLEEP,          // 休眠状态
     SOLDERING_STATE_SLEEP_DEEP,     // 深度睡眠状态
     SOLDERING_STATE_NTC_ERROR,      // NTC错误状态
     SOLDERING_STATE_PULL_OUT_ERROR  // 拔出错误状态

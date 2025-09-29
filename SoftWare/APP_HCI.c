@@ -204,42 +204,46 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
         if (addOrSub)
         {
             if (AllStatus_S.flashSave_s.StandbyTime < STANDBY_DELAY_TIME_MAX)
-                AllStatus_S.flashSave_s.StandbyTime += 1;
+                AllStatus_S.flashSave_s.StandbyTime += app_Encoder_FastSetTemp();
             if (AllStatus_S.flashSave_s.StandbyTime > STANDBY_DELAY_TIME_MAX)
                 AllStatus_S.flashSave_s.StandbyTime = STANDBY_DELAY_TIME_MAX;
         }
         else
         {
             if (AllStatus_S.flashSave_s.StandbyTime > STANDBY_DELAY_TIME_MIN)
-                AllStatus_S.flashSave_s.StandbyTime -= 1;
+                AllStatus_S.flashSave_s.StandbyTime -= app_Encoder_FastSetTemp();
+            if (AllStatus_S.flashSave_s.StandbyTime > STANDBY_DELAY_TIME_MAX)
+                AllStatus_S.flashSave_s.StandbyTime = STANDBY_DELAY_TIME_MIN;
         }
         break;
     case SMG_P03:
         if (addOrSub)
         {
             if (AllStatus_S.flashSave_s.SleepDelayTime < SLEEP_DELAY_TIME_MAX)
-                AllStatus_S.flashSave_s.SleepDelayTime += 1;
+                AllStatus_S.flashSave_s.SleepDelayTime += app_Encoder_FastSetTemp() / 5;
             if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MAX)
                 AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MAX;
         }
         else
         {
             if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MIN)
-                AllStatus_S.flashSave_s.SleepDelayTime -= 1;
+                AllStatus_S.flashSave_s.SleepDelayTime -= app_Encoder_FastSetTemp() / 5;
+            if (AllStatus_S.flashSave_s.SleepDelayTime > SLEEP_DELAY_TIME_MAX)
+                AllStatus_S.flashSave_s.SleepDelayTime = SLEEP_DELAY_TIME_MIN;
         }
         break;
     case SMG_P04:
         if (addOrSub)
         {
             if (AllStatus_S.flashSave_s.KeepWarmTime < STRONG_WARM_TIME_MAX)
-                AllStatus_S.flashSave_s.KeepWarmTime += 1;
+                AllStatus_S.flashSave_s.KeepWarmTime += app_Encoder_FastSetTemp();
             if (AllStatus_S.flashSave_s.KeepWarmTime > STRONG_WARM_TIME_MAX)
                 AllStatus_S.flashSave_s.KeepWarmTime = STRONG_WARM_TIME_MAX;
         }
         else
         {
             if (AllStatus_S.flashSave_s.KeepWarmTime > STRONG_WARM_TIME_MIN)
-                AllStatus_S.flashSave_s.KeepWarmTime -= 1;
+                AllStatus_S.flashSave_s.KeepWarmTime -= app_Encoder_FastSetTemp();
             if (AllStatus_S.flashSave_s.KeepWarmTime < STRONG_WARM_TIME_MIN)
                 AllStatus_S.flashSave_s.KeepWarmTime = STRONG_WARM_TIME_MIN;
         }
@@ -660,9 +664,9 @@ void app_SolderingTempDisplay(void)
     static uint32_t last_commonmodechange = 0;
     static uint8_t fast_refresh_active = 0;
     static uint32_t fast_refresh_start_tick = 0;
+    static float32_t diff = 0.0f;
     const uint32_t FAST_REFRESH_HOLD_MS = CODERING_CHANGE_DISPLAY_HOLD_MS;
 
-    float32_t diff = fabsf(AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] - (float32_t)AllStatus_S.flashSave_s.TarTemp);
     last_display_temp_tick++;
 
     if (last_commonmodechange != AllStatus_S.Seting.CommonModeChange)
@@ -703,6 +707,19 @@ void app_SolderingTempDisplay(void)
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_STANDBY: // 进入待机
+                if (AllStatus_S.flashSave_s.StandbyTime)
+                {
+                    AllStatus_S.flashSave_s.TarTemp = AllStatus_S.flashSave_s.ProtectTemp;
+                    diff = fabsf(AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] - (float32_t)AllStatus_S.flashSave_s.TarTemp);
+                    Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1, uintVar);
+                    if (diff < 1.0f) // 首次到达温度蜂鸣器响应
+                    {
+                        if (!AllStatus_S.OneState_TempOk)
+                            AllStatus_S.OneState_TempOk = 1;
+                    }
+                }
+                break;
+            case SOLDERING_STATE_SLEEP: // 进入休眠
                 if ((uint32_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] < last_display_temp)
                 {
                     Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1, uintVar);
@@ -710,12 +727,12 @@ void app_SolderingTempDisplay(void)
                 }
                 AllStatus_S.OneState_TempOk = 0;
                 break;
-            case SOLDERING_STATE_SLEEP_DEEP: // 进入睡眠
+            case SOLDERING_STATE_SLEEP_DEEP: // 进入深睡眠
                 Lcd_SMG_DisplaySel(DRIVE_SLEEP, 1, DispErrorNum);
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_OK: // 正常状态
-
+                diff = fabsf(AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] - (float32_t)AllStatus_S.flashSave_s.TarTemp);
                 // Lcd_SMG_DisplaySel(AllStatus_S.adc_filter_value, 1, uintVar);    //温度原始ADC值，带FIR滤波
                 // Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter[SOLDERING_ELECTRICITY_NUM], 1, uintVar);    //估计值
                 // Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_ELECTRICITY_NUM], 1, uintVar);   // 实时值

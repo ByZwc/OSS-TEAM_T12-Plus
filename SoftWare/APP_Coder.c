@@ -17,16 +17,14 @@ static void app_Encoder_TurnRightOrLeft(uint8_t addOrSub)
         AllStatus_S.Seting.CommonModeChange++;
         AllStatus_S.OneState_TempOk = 0;
     }
-    
 }
 
 static uint8_t TarTempSaveInFlash_temp = 0;
 void APP_TarTempSaveInFlash_Task(void)
 {
 
-    if (AllStatus_S.Old_TarTemp != AllStatus_S.flashSave_s.TarTemp)
+    if (AllStatus_S.Old_TarTemp != AllStatus_S.flashSave_s.TarTemp && AllStatus_S.SolderingState == SOLDERING_STATE_OK)
     {
-
         TarTempSaveInFlash_temp++;
         if (TarTempSaveInFlash_temp > NEW_TEMP_SAVE_TIME)
         {
