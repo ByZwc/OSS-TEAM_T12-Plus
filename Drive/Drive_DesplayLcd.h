@@ -37,13 +37,13 @@
 #define AIP650E_CLK_UP() HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_SET)
 #define AIP650E_CLK_DOWM() HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_RESET)
 
-#define AIP650E_WRITE_VIDEO 0x48
+#define AIP650E_WRITE_VIDEO 0x48 // 系统指令
 #define AIP650E_SET_ADDR1 0x68
 #define AIP650E_SET_ADDR2 0x6A
 #define AIP650E_SET_ADDR3 0x6C
 #define AIP650E_SET_ADDR4 0x6E
-#define AIP650E_SET_BRIGHTNESS_MAX 0x71
-#define AIP650E_SET_BRIGHTNESS_LOW 0x00
+#define AIP650E_SET_BRIGHTNESS_MAX 0x01 // 最大亮度
+#define AIP650E_SET_BRIGHTNESS_LOW 0x11 // 最小亮度
 /******************************************************************************* */
 
 extern uint8_t displayMemory[ALL_SEG_NUM];

@@ -205,7 +205,7 @@ static void Drive_FlashVerify(void)
         AllStatus_S.flashSave_s.PreinstallTempOnOff = 0;
         AllStatus_S.flashSave_s.PreinstallTempNum = 1;
         AllStatus_S.flashSave_s.BackgroundLightOnoff = 0;
-        AllStatus_S.flashSave_s.SleepDelayTime = 1;
+        AllStatus_S.flashSave_s.SleepDelayTime = 5;
         AllStatus_S.flashSave_s.DisplayPowerOnOff = 0;
         AllStatus_S.flashSave_s.KeepStrongTempTime = STRONG_WARM_TIME_MIN;
         AllStatus_S.flashSave_s.ProtectTemp = PROTECT_TEMP_MAX - 100;
