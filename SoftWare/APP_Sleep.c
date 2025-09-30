@@ -85,14 +85,26 @@ static void APP_SleepIconBlink(void)
 // 休眠控制任务，每250ms调用一次
 void APP_Sleep_Control_Task(void)
 {
-    static uint32_t last_adc_value = 0;
-    static uint32_t stable_time_ms = 0; // 用于判定进入待机
+    // 状态转换逻辑：
+    // 1. ADC变化超过阈值 -> 退出待机/休眠/深度睡眠，恢复正常
+    //    或者功率超过阈值 -> 退出待机/休眠/深度睡眠，恢复正常
+    //    或者温度偏差超过阈值 -> 退出待机/休眠/深度睡眠，恢复正常
+    //    （以上三项任意一项满足即可）
+    // 2. 一键增强温度激活 -> 清空计时
+    // 3. ADC在 StandbyTime 秒内保持稳定 -> 进入待机
+    // 4. 待机时间超过 SleepDelayTime 分钟 -> 进入休眠
+    // 5. 休眠状态下当前温度低于 SLEEP_DEEP_TEMP_RANGE -> 进入深度休眠
+    static uint32_t last_adc_value = 0;     // 上次ADC值
+    static uint32_t stable_time_ms = 0;     // 用于判定进入待机
+    static uint8_t initialized = 0;         // 是否已初始化
+    static uint32_t standby_elapsed_ms = 0; // 已处于待机后的累计时间
     uint32_t cur_adc_value = APP_Sleep_GetAdcValue();
     // Lcd_SMG_DisplaySel(cur_adc_value, 1, uintHex);
 
     if (AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR)
     {
         stable_time_ms = 0;
+        standby_elapsed_ms = 0;
         return;
     }
 
@@ -102,6 +114,7 @@ void APP_Sleep_Control_Task(void)
         if (AllStatus_S.Sleep_PowerFilter > APP_Sleep_PowerCheck())
         {
             stable_time_ms = 0;
+            standby_elapsed_ms = 0;
         }
     }
 
@@ -109,20 +122,20 @@ void APP_Sleep_Control_Task(void)
     {
         float temp_diff = (float32_t)AllStatus_S.flashSave_s.TarTemp - AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM];
 
-        if (temp_diff > APP_Sleep_TempCheck())
+        if (temp_diff > APP_Sleep_TempCheck()) // 温度变小才生效
         {
             stable_time_ms = 0;
+            standby_elapsed_ms = 0;
         }
     }
 
-    // 状态转换逻辑：
-    // 1. ADC变化超过阈值 -> 退出待机/休眠/深度睡眠，恢复正常
-    // 2. ADC在 StandbyTime 秒内保持稳定 -> 进入待机
-    // 3. 待机时间超过 SleepDelayTime 分钟 -> 进入休眠
-    // 4. 休眠状态下当前温度低于 SLEEP_DEEP_TEMP_RANGE -> 进入深度休眠
-    static uint8_t initialized = 0;
-    static uint32_t standby_elapsed_ms = 0; // 已处于待机后的累计时间
+    if (AllStatus_S.encoder_s.OneKeyStrongTemp && AllStatus_S.SolderingState == SOLDERING_STATE_OK)
+    {
+        stable_time_ms = 0;
+        standby_elapsed_ms = 0;
+    }
 
+    // 初始化
     if (!initialized)
     {
         last_adc_value = cur_adc_value;

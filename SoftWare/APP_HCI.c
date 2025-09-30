@@ -707,9 +707,10 @@ void app_SolderingTempDisplay(void)
                 AllStatus_S.OneState_TempOk = 0;
                 break;
             case SOLDERING_STATE_STANDBY: // 进入待机
-                if (AllStatus_S.flashSave_s.StandbyTime && (AllStatus_S.Old_TarTemp > AllStatus_S.flashSave_s.ProtectTemp))
+                if (AllStatus_S.flashSave_s.StandbyTime)
                 {
-                    AllStatus_S.flashSave_s.TarTemp = AllStatus_S.flashSave_s.ProtectTemp;
+                    if (AllStatus_S.Old_TarTemp > AllStatus_S.flashSave_s.ProtectTemp)
+                        AllStatus_S.flashSave_s.TarTemp = AllStatus_S.flashSave_s.ProtectTemp;
                     diff = fabsf(AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] - (float32_t)AllStatus_S.flashSave_s.TarTemp);
                     Lcd_SMG_DisplaySel((uint16_t)AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM], 1, uintVar);
                     if (diff < 1.0f) // 首次到达温度蜂鸣器响应
@@ -777,6 +778,13 @@ void APP_SleepCloseBackLight_Task(void)
     }
 }
 
+static void app_OneKeyStrongTemp_Blink(void)
+{
+    static uint8_t onOff = 0;
+    onOff = !onOff;
+    Lcd_icon_onOff(icon_temp, onOff);
+}
+
 void APP_OneKeyStrongTemp_Task(void)
 {
     static uint8_t active = 0;   // 1=已进入强温提升阶段
@@ -803,6 +811,7 @@ void APP_OneKeyStrongTemp_Task(void)
         else
         {
             elapsed++;
+            app_OneKeyStrongTemp_Blink(); // 图标闪烁
             if (elapsed >= AllStatus_S.flashSave_s.KeepStrongTempTime)
             {
                 if (AllStatus_S.flashSave_s.TarTemp >= 50)
@@ -811,6 +820,7 @@ void APP_OneKeyStrongTemp_Task(void)
                 AllStatus_S.OneState_TempOk = 0;
                 active = 0;
                 elapsed = 0;
+                Lcd_icon_onOff(icon_temp, 1); // 退出强温提升，常亮
             }
         }
     }
