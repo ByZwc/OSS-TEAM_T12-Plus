@@ -698,13 +698,21 @@ void Lcd_smgDowm3_SetErrorNum(int16_t ErrorNum, uint8_t OnOff) // 显示错误�
 void APP_Lcd_PowerSetPoint_Task(void)
 {
     float32_t Pwmvalue = AllStatus_S.pid_s.pid_out;
+
+    /* 一阶低通滤波: 采样率Fs=10Hz, 截止频率Fc=1Hz
+       系数alpha = 1 - exp(-2*pi*Fc/Fs) ≈ 0.4665 */
+    static float32_t s_ledCountFiltered = 0.0f;
+    static const float32_t alpha = 0.4665f; /* 滤波系数 */
+
     if (Pwmvalue <= 0.0f)
     {
+        s_ledCountFiltered = 0.0f;
         displayMemory[3] = 0x00;
         return;
     }
     if (Pwmvalue >= (float32_t)MAX_PWM_PRIOD)
     {
+        s_ledCountFiltered = 8.0f;
         displayMemory[3] = 0xFF; /* 全亮(8个) */
         return;
     }
@@ -714,10 +722,15 @@ void APP_Lcd_PowerSetPoint_Task(void)
     if (ledCount > 8)
         ledCount = 8;
 
-    if (ledCount == 0)
-        displayMemory[3] = 0x00;
-    else
-        displayMemory[3] = (uint8_t)((1U << ledCount) - 1U);
+    /* 低通滤波 (指数平均) */
+    s_ledCountFiltered += alpha * ((float32_t)ledCount - s_ledCountFiltered);
+
+    /* 四舍五入得到最终整形LED数量 */
+    uint8_t ledCountFilter = (uint8_t)(s_ledCountFiltered + 0.5f);
+    if (ledCountFilter > 8)
+        ledCountFilter = 8;
+
+    displayMemory[3] = (ledCountFilter == 0) ? 0x00 : (uint8_t)((1U << ledCountFilter) - 1U);
 }
 
 void APP_Lcd_Test(void)
