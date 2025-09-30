@@ -790,19 +790,18 @@ void APP_OneKeyStrongTemp_Task(void)
     static uint8_t active = 0;   // 1=已进入强温提升阶段
     static uint16_t elapsed = 0; // 已维持的秒数（函数1s调用一次）
 
-    // 若当前目标温度已超过最大强温限制，则退出强温模式
-    if (AllStatus_S.flashSave_s.TarTemp > MAX_STRONG_TEMP)
-    {
-        AllStatus_S.encoder_s.OneKeyStrongTemp = 0;
-        active = 0;
-        elapsed = 0;
-        return;
-    }
-
     if (AllStatus_S.encoder_s.OneKeyStrongTemp)
     {
         if (!active)
         {
+            // 若当前目标温度已超过最大强温限制，则退出强温模式
+            if (AllStatus_S.flashSave_s.TarTemp > MAX_STRONG_TEMP)
+            {
+                AllStatus_S.encoder_s.OneKeyStrongTemp = 0;
+                active = 0;
+                elapsed = 0;
+                return;
+            }
             AllStatus_S.flashSave_s.TarTemp += 50;
             AllStatus_S.OneState_TempOk = 0;
             active = 1;

@@ -55,6 +55,7 @@ int main(void)
   Drive_DisplayLcd_Init();                                      // 初始化LCD
   Drive_Buz_Init();                                             // 初始化蜂鸣器
   Drive_SystemClockConfig(RCC_HSICALIBRATION_24MHz);            // 初始化系统时钟
+  Drive_BUTTON_Init();                                          // 初始化按键
   HAL_Delay(25);                                                // 等待电源稳定
   Drive_FlashSaveInit();                                        // 初始化历史温度
   Drive_MosSwitch_OFF();                                        // 初始化mos管引脚
@@ -62,7 +63,6 @@ int main(void)
   Drive_AdcConfig();                                            // 初始化ADC
   Drive_Lcd_AllIcon_init();                                     // 初始化图标
   Drive_Encoder_Init();                                         // 初始化旋转编码器
-  Drive_BUTTON_Init();                                          // 初始化按键
   APP_shortCircuitProtection();                                 // 短路&开路判断
   Drive_Iwdg_init();                                            // 初始化看门狗
   Drive_Buz_OnOff(BUZ_20MS, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE); // 启动音

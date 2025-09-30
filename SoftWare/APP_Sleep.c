@@ -19,7 +19,7 @@ static uint32_t APP_Sleep_GetAdcValue(void)
     const float dt = 0.25f; // 1 / 4Hz
     const float fc = 0.5f;  // 截止频率
     const float RC = 1.0f / (2.0f * 3.1415926f * fc);
-    const float alpha = dt / (RC + dt); 
+    const float alpha = dt / (RC + dt);
 
     if (!initialized)
     {
@@ -310,9 +310,20 @@ void APP_SleepBackLight_Task(void)
 
 void APP_SleepBackLight_Task(void)
 {
-    if (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP &&
-        AllStatus_S.flashSave_s.BackgroundLightOnoff)
+    // 低亮模式：深度休眠且背光开启配置
+    uint8_t low_mode = (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP &&
+                        AllStatus_S.flashSave_s.BackgroundLightOnoff);
+
+    // 记录上一次模式，-1 表示未初始化
+    static int8_t prev_mode = -1;
+
+    if ((int8_t)low_mode != prev_mode)
     {
-        Drive_DisplayLcd_SetBrightnessLow();
+        if (low_mode)
+            Drive_DisplayLcd_SetBrightnessLow(); // 仅第一次进入低亮模式执行
+        else
+            Drive_DisplayLcd_Init();             // 仅第一次恢复正常模式执行
+
+        prev_mode = (int8_t)low_mode;
     }
 }

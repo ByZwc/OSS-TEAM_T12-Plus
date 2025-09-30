@@ -91,7 +91,7 @@
 #define FLASH_CHECK_VLUEb 0xAAAAAAAA // 校验值
 // #define FLASH_CHECK_VLUEb 0xACACACAC // 校验值
 #define FIRST_SOLDERING_TEMP 300 // 初始化温度
-#define NEW_TEMP_SAVE_TIME 3     // 温度调节后保存时间
+#define NEW_TEMP_SAVE_TIME 2     // 温度调节后保存时间-1
 #define PCB_PROTECT_TEMP 75.0f   // PCB保护温度
 
 // 积分限幅
@@ -149,7 +149,7 @@
 #define T245_SOLDERING_MAX_PID 25 // 最大功率输出温度阈值
 
 #define SOLDERING_ELECTRICITY_THRESHOLD 250 // 短路电压阈值
-#define SOLDERING_ELECTRICITY_OPEN 20      // 开路电压阈值
+#define SOLDERING_ELECTRICITY_OPEN 20       // 开路电压阈值
 #define SOLDERING_TEMP_OPEN 600             // 电烙铁温度错误
 
 #define SOLDERING_TID_T245 0x800     // ADC判断阈值
