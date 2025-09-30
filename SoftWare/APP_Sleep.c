@@ -7,8 +7,31 @@
 // 获取ADC值
 static uint32_t APP_Sleep_GetAdcValue(void)
 {
-    AllStatus_S.adc_value[SLEEP_NUM] = Drive_ADCConvert(SLEEP_NUM);
-    return AllStatus_S.adc_value[SLEEP_NUM];
+    /* 采样率: 4Hz (任务周期250ms)
+       目标截止频率: 0.5Hz
+    */
+    uint32_t raw = Drive_ADCConvert(SLEEP_NUM);
+    AllStatus_S.adc_value[SLEEP_NUM] = raw;
+
+    static uint8_t initialized = 0;
+    static float filtered = 0.0f;
+
+    const float dt = 0.25f; // 1 / 4Hz
+    const float fc = 0.5f;  // 截止频率
+    const float RC = 1.0f / (2.0f * 3.1415926f * fc);
+    const float alpha = dt / (RC + dt); 
+
+    if (!initialized)
+    {
+        filtered = (float)raw;
+        initialized = 1;
+    }
+    else
+    {
+        filtered += alpha * ((float)raw - filtered);
+    }
+
+    return (uint32_t)(filtered + 0.5f);
 }
 
 static uint32_t APP_Sleep_PowerCheck(void)
@@ -66,18 +89,6 @@ static void APP_SleepIconBlink(void)
             elapsed_ms = 0;
             icon_on = !icon_on;
             Lcd_icon_onOff(icon_soldering, icon_on);
-        }
-    }
-    else
-    {
-        elapsed_ms = 0;
-        icon_on = 0;
-
-        if (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP ||
-            AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP ||
-            AllStatus_S.SolderingState == SOLDERING_STATE_OK)
-        {
-            Lcd_icon_onOff(icon_soldering, 0);
         }
     }
 }
