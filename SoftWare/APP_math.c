@@ -180,22 +180,55 @@ uint16_t FIR_LowpassFilter(uint16_t limit_adc)
         return (uint16_t)sum;
 }
 
-// 电流卡尔曼滤波器参数宏定义
-#define KALMAN_ELE_Q_MIN 0.05f  // 最小过程噪声
-#define KALMAN_ELE_R_MAX 200.0f // 最大测量噪声
+// 电流卡尔曼滤波自适应参数宏定义(残差驱动)
+#define KALMAN_ELE_Q_MIN 0.02f               // 最小过程噪声Q
+#define KALMAN_ELE_Q_MAX 1.20f               // 最大过程噪声Q
+#define KALMAN_ELE_R_MIN 5.0f                // 最小测量噪声R
+#define KALMAN_ELE_R_MAX 200.0f              // 最大测量噪声R
+#define KALMAN_ELE_RESID_ALPHA 0.05f         // 残差绝对值指数平均系数
+#define KALMAN_ELE_RESID_THRESH_HIGH 4095.0f // 残差上限映射阈值(>即认为完全失配)
+#define KALMAN_ELE_RESID_EPS 1e-6f           // 防止除0
 
-// 电流卡尔曼滤波器
-static TYPEDEF_KALMAN_S kalman_ele_inst = {0.0f, 1.0f, 0.0f, KALMAN_ELE_Q_MIN, KALMAN_ELE_R_MAX, 0.0f};
+// 结构: x(估计), p(协方差), diff(备用/残差), q, r, k
+static TYPEDEF_KALMAN_S kalman_ele_inst = {
+    .x = 0.0f,
+    .p = 1.0f,
+    .diff = 0.0f,
+    .q = KALMAN_ELE_Q_MIN,
+    .r = KALMAN_ELE_R_MAX,
+    .k = 0.0f};
 
 float32_t APP_KalmanFilter_Ele(float32_t measured_ele)
 {
-    // 预测
+    // 1. 计算残差(创新)
+    float32_t resid = measured_ele - kalman_ele_inst.x;
+    float32_t abs_resid = fabsf(resid);
+
+    // 2. 残差绝对值指数平均(平滑残差幅度)
+    static float32_t resid_abs_avg = 0.0f;
+    resid_abs_avg += KALMAN_ELE_RESID_ALPHA * (abs_resid - resid_abs_avg);
+
+    // 3. 归一化映射(0~1)
+    float32_t ratio = resid_abs_avg / (KALMAN_ELE_RESID_THRESH_HIGH + KALMAN_ELE_RESID_EPS);
+    if (ratio > 1.0f)
+        ratio = 1.0f;
+
+    // 4. 自适应调整Q、R
+    // 残差大 -> Q、R 同时升高(系统/测量都不稳定)
+    // 残差小 -> Q、R 同时降低(信号稳定, 提升跟踪精度)
+    kalman_ele_inst.q = KALMAN_ELE_Q_MIN + (KALMAN_ELE_Q_MAX - KALMAN_ELE_Q_MIN) * ratio;
+    kalman_ele_inst.r = KALMAN_ELE_R_MIN + (KALMAN_ELE_R_MAX - KALMAN_ELE_R_MIN) * ratio;
+
+    // 5. 预测
     kalman_ele_inst.p += kalman_ele_inst.q;
 
-    // 计算卡尔曼增益并更新
+    // 6. 更新
     kalman_ele_inst.k = kalman_ele_inst.p / (kalman_ele_inst.p + kalman_ele_inst.r);
-    kalman_ele_inst.x += kalman_ele_inst.k * (measured_ele - kalman_ele_inst.x);
+    kalman_ele_inst.x += kalman_ele_inst.k * resid;
     kalman_ele_inst.p *= (1.0f - kalman_ele_inst.k);
+
+    // 7. 保存残差(可用于调试)
+    kalman_ele_inst.diff = resid;
 
     return kalman_ele_inst.x;
 }
