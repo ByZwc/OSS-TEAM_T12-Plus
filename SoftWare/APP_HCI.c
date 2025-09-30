@@ -273,10 +273,14 @@ void app_EncoderSetData_LcdSettingPage(uint8_t addOrSub)
         }
         break;
     case SMG_P07:
-        if (AllStatus_S.flashSave_s.PreinstallTempOnOff)
+        /* if (AllStatus_S.flashSave_s.PreinstallTempOnOff)
             AllStatus_S.flashSave_s.PreinstallTempOnOff = 0;
         else
-            AllStatus_S.flashSave_s.PreinstallTempOnOff = 1;
+            AllStatus_S.flashSave_s.PreinstallTempOnOff = 1; */
+        if (AllStatus_S.flashSave_s.SolderingTypeOnOff)
+            AllStatus_S.flashSave_s.SolderingTypeOnOff = 0;
+        else
+            AllStatus_S.flashSave_s.SolderingTypeOnOff = 1;
         break;
     case SMG_P08:
         if (AllStatus_S.flashSave_s.BackgroundLightOnoff)
@@ -329,7 +333,7 @@ void app_Lcd_DisplayPNumber_SettingPage(uint8_t addOrSub)
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.calibration_temp, 1, intVar);
         break;
     case SMG_P04:
-        Lcd_icon_onOff(icon_temp, 1);
+        Lcd_icon_onOff(icon_temp, 0);
         // Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1, DispOnOff);
         break;
     case SMG_P05:
@@ -504,8 +508,8 @@ static void app_SelBlink(uint8_t onOff)
     case SMG_P06: // 校准温度
         Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.calibration_temp, 1, intVar);
         break;
-    case SMG_P07: // 预设温度功能开关
-        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.PreinstallTempOnOff, 1, DispOnOff);
+    case SMG_P07: // 烙铁头型号
+        Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.SolderingTypeOnOff, 1, DispOnOff);
         break;
     case SMG_P08: // 背光
         Lcd_SMG_DisplaySel(AllStatus_S.flashSave_s.BackgroundLightOnoff, 1, DispOnOff);

@@ -88,8 +88,8 @@
 #define SLEEP_NUM 7                 // ADC序号
 
 #define BUZ_ON_TIME 2                // 单位：25ms(蜂鸣器)
-#define FLASH_CHECK_VLUEb 0xAAAAAAAA // 校验值
-// #define FLASH_CHECK_VLUEb 0xACACACAC // 校验值
+//#define FLASH_CHECK_VLUEb 0xAAAAAAAA // 校验值
+#define FLASH_CHECK_VLUEb 0xACACACAC // 校验值
 #define FIRST_SOLDERING_TEMP 300 // 初始化温度
 #define NEW_TEMP_SAVE_TIME 2     // 温度调节后保存时间-1
 #define PCB_PROTECT_TEMP 75.0f   // PCB保护温度
@@ -146,7 +146,7 @@
 
 #define T115_SOLDERING_MAX_PID 20 // 最大功率输出温度阈值
 #define T210_SOLDERING_MAX_PID 20 // 最大功率输出温度阈值
-#define T245_SOLDERING_MAX_PID 25 // 最大功率输出温度阈值
+#define T245_SOLDERING_MAX_PID 45 // 最大功率输出温度阈值
 
 #define SOLDERING_ELECTRICITY_THRESHOLD 250 // 短路电压阈值
 #define SOLDERING_ELECTRICITY_OPEN 20       // 开路电压阈值
@@ -226,17 +226,18 @@ typedef struct
 typedef struct
 {
     uint32_t checkVlue;            // 校验值
-    uint32_t TarTemp;              // 目标温度（设置后3秒掉电保存，保护flash寿命）(预设模式不保存)
-    int32_t calibration_temp;      // 校准温度值（修改后立即保存）
-    uint32_t BuzOnOff;             // 蜂鸣器使能（修改后立即保存）
-    uint32_t PreinstallTempOnOff;  // 预设温度使能（修改后立即保存）
-    uint32_t PreinstallTempNum;    // 预设温度编号（修改后立即保存）
-    uint32_t ProtectTemp;          // 待机保护温度（修改后立即保存）
-    uint32_t StandbyTime;          // 待机模式时间（修改后立即保存）单位s
-    uint32_t SleepDelayTime;       // 休眠时间（修改后立即保存）单位min
-    uint32_t KeepStrongTempTime;   // 一键增强温度保持时间（修改后立即保存）单位s
-    uint32_t DisplayPowerOnOff;    // 功率显示开关（修改后立即保存）
-    uint32_t BackgroundLightOnoff; // 背光开关（修改后立即保存）
+    uint32_t TarTemp;              // 目标温度（设置后1秒掉电保存，保护flash寿命）(预设模式不保存)
+    int32_t calibration_temp;      // 校准温度值
+    uint32_t BuzOnOff;             // 蜂鸣器使能
+    uint32_t PreinstallTempOnOff;  // 预设温度使能
+    uint32_t PreinstallTempNum;    // 预设温度编号
+    uint32_t ProtectTemp;          // 待机保护温度
+    uint32_t StandbyTime;          // 待机模式时间 单位s
+    uint32_t SleepDelayTime;       // 休眠时间单位 min
+    uint32_t KeepStrongTempTime;   // 一键增强温度保持时间 单位s
+    uint32_t DisplayPowerOnOff;    // 功率显示开关
+    uint32_t BackgroundLightOnoff; // 背光开关
+    uint32_t SolderingTypeOnOff;   // 烙铁头型号 ON：开启尖头温度补偿 OFF：默认刀头温度。
     uint32_t SaveNum;              // 保存次数
 
 } TYPEDEF_FLASHSAVE_S;

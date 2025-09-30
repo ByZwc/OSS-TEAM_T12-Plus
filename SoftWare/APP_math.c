@@ -48,41 +48,141 @@ float32_t APP_FirFilter_ADC(float32_t Src)
 }
 
 //*****************************************************************************************/
-#define KALMAN_Q_MIN_TEMP 1.0f
-#define KALMAN_Q_MAX_TEMP 1.0f
-#define KALMAN_R_MIN_TEMP 10.0f
-#define KALMAN_R_MAX_TEMP 10.0f
-#define KALMAN_DIFF_THRESH_TEMP 20.0f
-static TYPEDEF_KALMAN_S kalman_temp_inst = {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+// 自适应 + 下跳突变抑制卡尔曼（烙铁头温度）
+// 说明：实际温度缓升/缓降，采样会周期性出现约100ms的瞬时“降温”假突变（30~500℃范围内明显向下尖峰）
+// 思路：在进入卡尔曼前做“物理可信度”预判，对异常快速下降做限速/暂缓采信；若下降持续，则判定为真实降温再放行
+// 优点：不影响正常升温 / 小幅自然降温响应，显著抑制偶发采样跌落造成的显示抖动和控制误差
+
+#define KALMAN_Q_MIN_TEMP              0.6f
+#define KALMAN_Q_MAX_TEMP              1.8f
+#define KALMAN_R_MIN_TEMP              6.0f
+#define KALMAN_R_MAX_TEMP              14.0f
+#define KALMAN_DIFF_THRESH_TEMP        25.0f   // 接近目标温度的“稳态”判定范围(±)
+#define TEMP_SPIKE_DROP_THRESHOLD      25.0f   // 判定一次“可疑向下尖峰”的瞬时跌落幅度(℃)
+#define TEMP_SPIKE_MAX_DURATION        3       // 连续抑制采样次数(采样周期 * 次数 ≈ 伪尖峰持续时间上限)
+#define TEMP_MAX_COOL_STEP_PER_SAMPLE  3.0f    // 认为物理上单周期最大自然降温步长(℃)
+#define TEMP_REAL_DROP_CONFIRM_RATIO   0.55f   // 抑制期结束后仍低于( last_valid - THRESHOLD * 该比率 ) 则接受为真实跌落
+#define TEMP_FAST_JUMP_RESET           350.0f  // 极端差值(如插拔/换头)时直接重置滤波
+
+static TYPEDEF_KALMAN_S kalman_temp_inst = {0.0f, 1.0f, 0.0f, 1.0f, 12.0f, 0.0f};
 
 float32_t APP_kalmanFilter_solderingTemp(float32_t input, float32_t target)
 {
+    // 1. 量程/开路上限保护：直接采信并重置
     if (input > SOLDERING_TEMP_OPEN)
     {
-        // 温度超限，直接重置滤波结果
         kalman_temp_inst.x = input;
         kalman_temp_inst.p = 1.0f;
         return kalman_temp_inst.x;
     }
 
-    // 采样与设定温度差异
-    /* kalman_temp_inst.diff = fabsf(input - target);
+    // 2. 静态变量用于突变判断
+    static uint8_t  spike_hold_cnt = 0;      // 剩余抑制次数
+    static uint8_t  initialized    = 0;
+    static float32_t last_valid_raw = 0.0f;  // 最近一次确认采信的真实原始值
 
-    if (kalman_temp_inst.diff < KALMAN_DIFF_THRESH_TEMP)
+    if (!initialized)
     {
-        kalman_temp_inst.q = KALMAN_Q_MIN_TEMP + (KALMAN_Q_MAX_TEMP - KALMAN_Q_MIN_TEMP) * (kalman_temp_inst.diff / KALMAN_DIFF_THRESH_TEMP);
-        kalman_temp_inst.r = KALMAN_R_MIN_TEMP + (KALMAN_R_MAX_TEMP - KALMAN_R_MIN_TEMP) * (kalman_temp_inst.diff / KALMAN_DIFF_THRESH_TEMP);
+        initialized = 1;
+        last_valid_raw = input;
+        kalman_temp_inst.x = input;
+        kalman_temp_inst.p = 1.0f;
+        return kalman_temp_inst.x;
+    }
+
+    float32_t raw = input;
+    float32_t used_meas; // 送入卡尔曼的“可信/修正后”测量值
+
+    // 3. 极端跳变(可能换头/上电)——直接重置
+    if (fabsf(raw - kalman_temp_inst.x) > TEMP_FAST_JUMP_RESET)
+    {
+        kalman_temp_inst.x = raw;
+        kalman_temp_inst.p = 1.0f;
+        last_valid_raw = raw;
+        spike_hold_cnt = 0;
+        return kalman_temp_inst.x;
+    }
+
+    // 4. 突变检测逻辑（只关注“快速向下”）
+    if (spike_hold_cnt == 0)
+    {
+        // 尚未处于抑制期
+        if ((last_valid_raw - raw) >= TEMP_SPIKE_DROP_THRESHOLD)
+        {
+            // 发现可疑向下尖峰，启动短暂抑制
+            spike_hold_cnt = TEMP_SPIKE_MAX_DURATION;
+            // 构造一个“物理可信”降温幅度
+            used_meas = last_valid_raw - TEMP_MAX_COOL_STEP_PER_SAMPLE;
+        }
+        else
+        {
+            // 正常数据
+            used_meas = raw;
+            last_valid_raw = raw;
+        }
     }
     else
-    { */
-    kalman_temp_inst.q = KALMAN_Q_MAX_TEMP;
-    kalman_temp_inst.r = KALMAN_R_MAX_TEMP;
-    //}
+    {
+        // 已在抑制期
+        if (raw >= (last_valid_raw - TEMP_SPIKE_DROP_THRESHOLD * 0.40f))
+        {
+            // 原始值已大幅回弹 —— 认定为伪尖峰，立即结束抑制并平滑融合
+            spike_hold_cnt = 0;
+            last_valid_raw = (last_valid_raw * 0.7f + raw * 0.3f);
+            used_meas = last_valid_raw;
+        }
+        else
+        {
+            // 仍然很低，倒计时
+            if (--spike_hold_cnt == 0)
+            {
+                // 抑制期结束后再次判定是否接受为真实跌落
+                if (raw <= (last_valid_raw - TEMP_SPIKE_DROP_THRESHOLD * TEMP_REAL_DROP_CONFIRM_RATIO))
+                {
+                    // 接受真实下跌
+                    last_valid_raw = raw;
+                    used_meas = raw;
+                }
+                else
+                {
+                    // 仍判断为异常，强制缓降一次
+                    used_meas = last_valid_raw - TEMP_MAX_COOL_STEP_PER_SAMPLE;
+                    last_valid_raw = used_meas;
+                }
+            }
+            else
+            {
+                // 抑制期中，继续限速缓降
+                used_meas = last_valid_raw - TEMP_MAX_COOL_STEP_PER_SAMPLE;
+                last_valid_raw = used_meas;
+            }
+        }
+    }
 
+    // 5. 自适应 Q / R （根据与目标温差调节）
+    float32_t diff_tar = fabsf(used_meas - target);
+
+    // Q：温差大 -> 提升(加快跟踪)；接近目标 -> 降低(平滑)
+    float32_t q_ratio = diff_tar / KALMAN_DIFF_THRESH_TEMP;
+    if (q_ratio > 1.0f) q_ratio = 1.0f;
+    kalman_temp_inst.q = KALMAN_Q_MIN_TEMP + (KALMAN_Q_MAX_TEMP - KALMAN_Q_MIN_TEMP) * q_ratio;
+
+    // R：在突变抑制期或差异大时稍大，稳定后减小
+    float32_t base_r_ratio = diff_tar / (KALMAN_DIFF_THRESH_TEMP * 1.2f);
+    if (base_r_ratio > 1.0f) base_r_ratio = 1.0f;
+    float32_t r_dynamic = KALMAN_R_MIN_TEMP + (KALMAN_R_MAX_TEMP - KALMAN_R_MIN_TEMP) * base_r_ratio;
+    if (spike_hold_cnt) // 抑制期额外放大测量噪声，减小对状态的“信任”
+        r_dynamic *= 1.25f;
+    if (r_dynamic > KALMAN_R_MAX_TEMP) r_dynamic = KALMAN_R_MAX_TEMP;
+    kalman_temp_inst.r = r_dynamic;
+
+    // 6. 卡尔曼预测-更新
     kalman_temp_inst.p += kalman_temp_inst.q;
     kalman_temp_inst.k = kalman_temp_inst.p / (kalman_temp_inst.p + kalman_temp_inst.r);
-    kalman_temp_inst.x += kalman_temp_inst.k * (input - kalman_temp_inst.x);
+    kalman_temp_inst.x += kalman_temp_inst.k * (used_meas - kalman_temp_inst.x);
     kalman_temp_inst.p *= (1.0f - kalman_temp_inst.k);
+
+    kalman_temp_inst.diff = used_meas - kalman_temp_inst.x; // 调试/观察
 
     return kalman_temp_inst.x;
 }
@@ -620,16 +720,16 @@ void APP_shortCircuitProtection(void)
         Drive_MosSwitch210_PWMOut();    // 开启210PWM输出
         break;
     case SOLDERING_MODEL_T245:
-        AllStatus_S.pid_s.pid_pCoef = 45.0f;
+        AllStatus_S.pid_s.pid_pCoef = 200.0f;
         AllStatus_S.pid_s.pid_iCoef = 0.0f;
-        AllStatus_S.pid_s.pid_dCoef = 25.0f;
+        AllStatus_S.pid_s.pid_dCoef = 0.0f;
         AllStatus_S.pid_s.pid_integration_max = T245_MAX_PID_I;
         AllStatus_S.pid_s.pid_iItemCmd = 0.0f;
         AllStatus_S.pid_s.outPriod = T12_PID_MIX_CHANGE_PRIOD;
         AllStatus_S.pid_s.outPriod_max = T12_PID_MAX_CHANGE_PRIOD;
         AllStatus_S.pid_s.diffTempOutMaxPWM = T245_SOLDERING_MAX_PID;
         AllStatus_S.pid_s.pid_iItemJoinTemp = 24;
-        AllStatus_S.pid_s.pid_iItemQuitTemp = 25;
+        AllStatus_S.pid_s.pid_iItemQuitTemp = 10;
         // AllStatus_S.r0 = 2.55f;         // T245阻值
         AllStatus_S.r0 = 7.600f;        // T12阻值
         AllStatus_S.PowerStatic = 9.0f; // 245静态功率

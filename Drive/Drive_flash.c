@@ -152,7 +152,8 @@ static void Drive_FlashRed(TYPEDEF_FLASHSAVE_S *P_flashSave_s)
     AllStatus_S.Old_TarTemp = AllStatus_S.flashSave_s.TarTemp;
     AllStatus_S.flashSave_s.BuzOnOff = P_flashSave_s->BuzOnOff;
     AllStatus_S.flashSave_s.calibration_temp = P_flashSave_s->calibration_temp;
-    AllStatus_S.flashSave_s.PreinstallTempOnOff = P_flashSave_s->PreinstallTempOnOff;
+    AllStatus_S.flashSave_s.SolderingTypeOnOff = P_flashSave_s->SolderingTypeOnOff;
+    AllStatus_S.flashSave_s.PreinstallTempOnOff = 0; // P_flashSave_s->PreinstallTempOnOff;
     AllStatus_S.flashSave_s.PreinstallTempNum = P_flashSave_s->PreinstallTempNum;
     AllStatus_S.flashSave_s.BackgroundLightOnoff = P_flashSave_s->BackgroundLightOnoff;
     AllStatus_S.flashSave_s.SleepDelayTime = P_flashSave_s->SleepDelayTime;
@@ -202,6 +203,7 @@ static void Drive_FlashVerify(void)
         AllStatus_S.flashSave_s.TarTemp = FIRST_SOLDERING_TEMP;
         AllStatus_S.flashSave_s.BuzOnOff = 1;
         AllStatus_S.flashSave_s.calibration_temp = 0;
+        AllStatus_S.flashSave_s.SolderingTypeOnOff = 0;
         AllStatus_S.flashSave_s.PreinstallTempOnOff = 0;
         AllStatus_S.flashSave_s.PreinstallTempNum = 1;
         AllStatus_S.flashSave_s.BackgroundLightOnoff = 0;
