@@ -393,7 +393,7 @@ float32_t app_solderingT245_adcTurnToTemp(uint32_t solderingT45_AdcVlaue) // T24
 }
 
 #define SOLDERING_TEMP_T12_P1 (0.1938)
-#define SOLDERING_TEMP_T12_P2 (26.1030)
+#define SOLDERING_TEMP_T12_P2 (46.1030)
 #define SOLDERING_TEMP_T12_P3 (0)
 #define SOLDERING_TEMP_T12_P4 (0)
 float32_t app_soldering_T12_adcTurnToTemp(uint32_t solderingT45_AdcVlaue) // T12温度曲线函数（OK）
