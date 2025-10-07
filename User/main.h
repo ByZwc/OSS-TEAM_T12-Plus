@@ -87,12 +87,12 @@
 #define SOLDERING_TID_NUM 4         // ADC序号
 #define SLEEP_NUM 7                 // ADC序号
 
-#define BUZ_ON_TIME 2                // 单位：25ms(蜂鸣器)
-//#define FLASH_CHECK_VLUEb 0xAAAAAAAA // 校验值
+#define BUZ_ON_TIME 2 // 单位：25ms(蜂鸣器)
+// #define FLASH_CHECK_VLUEb 0xAAAAAAAA // 校验值
 #define FLASH_CHECK_VLUEb 0xACACACAC // 校验值
-#define FIRST_SOLDERING_TEMP 300 // 初始化温度
-#define NEW_TEMP_SAVE_TIME 2     // 温度调节后保存时间-1
-#define PCB_PROTECT_TEMP 75.0f   // PCB保护温度
+#define FIRST_SOLDERING_TEMP 300     // 初始化温度
+#define NEW_TEMP_SAVE_TIME 2         // 温度调节后保存时间-1
+#define PCB_PROTECT_TEMP 75.0f       // PCB保护温度
 
 // 积分限幅
 #define T210_MAX_PID_I 2250 // 60W
@@ -119,13 +119,14 @@
 #define T245_PID_MAX_CHANGE_PRIOD 1000
 #define T12_PID_MAX_CHANGE_PRIOD 2000
 
-#define MAX_STRONG_TEMP 450 // 强温最大值
-#define MAX_TAR_TEMP 480    // 目标温度最大值
-#define MIN_TAR_TEMP 105    // 目标温度最小值（实际值=MIN_TAR_TEMP-5）
-#define N_TAR_TEMP_STEP 5   // 目标温度调节步进值
-
-#define CALIBRATION_TEMP_MAX 50  // 校准温度最大值
-#define CALIBRATION_TEMP_MIN -50 // 校准温度最小值
+#define MAX_STRONG_TEMP 450           // 强温最大值
+#define MAX_TAR_TEMP 480              // 目标温度最大值
+#define MIN_TAR_TEMP 105              // 目标温度最小值（实际值=MIN_TAR_TEMP-5）
+#define N_TAR_TEMP_STEP 5             // 目标温度调节步进值
+#define MAX_SOLDERING_TEMP 550        // 电烙铁最大温度限制
+#define CALIBRATION_TEMP_MAX 50       // 校准温度最大值
+#define CALIBRATION_TEMP_MIN -50      // 校准温度最小值
+#define CALIBRATION_TEMP_SOLDERING 30 // 尖刀头补偿温度
 
 #define SLEEP_DELAY_TIME_MIN 0   // 休眠延时最小值
 #define SLEEP_DELAY_TIME_MAX 120 // 休眠延时最大值

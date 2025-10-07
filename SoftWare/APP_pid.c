@@ -20,9 +20,9 @@ static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
 }
 
 #define PID_ISET_MIN_TEMP 100
-#define PID_ISET_MAX_TEMP 450
+#define PID_ISET_MAX_TEMP 480
 #define PID_ISET_MIN_COEF 0.01f
-#define PID_ISET_MAX_COEF 0.1f
+#define PID_ISET_MAX_COEF 0.5f
 // 自适应I系数
 static float32_t app_pid_iSetRange(uint16_t TarTemp)
 {
@@ -63,7 +63,7 @@ static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
     {
         if (CurTemp > (TarTemp - AllStatus_S.pid_s.pid_iItemJoinTemp) && (CurTemp < TarTemp))
         {
-            AllStatus_S.pid_s.pid_iCoef = app_pid_iSetRange(TarTemp);
+            AllStatus_S.pid_s.pid_iCoef = app_pid_iSetRange(TarTemp); // 自适应I系数
             AllStatus_S.pid_s.pid_iItemCmd = 1.0f;
         }
     }
@@ -76,7 +76,7 @@ static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
 #endif
 
 #ifndef APP_MAX_POWER_SWITCH_COUNT_ON
-#define APP_MAX_POWER_SWITCH_COUNT_ON 1000 // 进入最大功率状态所需连续判定次数
+#define APP_MAX_POWER_SWITCH_COUNT_ON 500 // 进入最大功率状态所需连续判定次数
 #endif
 
 #ifndef APP_MAX_POWER_SWITCH_COUNT_OFF
