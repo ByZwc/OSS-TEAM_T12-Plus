@@ -309,9 +309,17 @@ void APP_SleepBackLight_Task(void)
     if ((int8_t)low_mode != prev_mode)
     {
         if (low_mode)
-            Drive_DisplayLcd_SetBrightnessLow(); // 仅第一次进入低亮模式执行
+        {
+            Drive_DisplayLcd_SetBrightnessLow();
+            HAL_Delay(1);
+            Drive_DisplayLcd_SetBrightnessLow();
+        }
         else
-            Drive_DisplayLcd_Init(); // 仅第一次恢复正常模式执行
+        {
+            Drive_DisplayLcd_Init();
+            HAL_Delay(1);
+            Drive_DisplayLcd_Init();
+        }
 
         prev_mode = (int8_t)low_mode;
     }
