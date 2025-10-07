@@ -715,9 +715,10 @@ void app_pid_Task(void)
     app_GetAdcVlaue_soldering(); // 获取烙铁头温度
     app_pidControl(TarTemp, AllStatus_S.CurTemp);
 
-    if (AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_OPEN_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP)
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP)
     {
-        AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = app_DisplayFilter_RC(app_DisplayFilter_kalman(0, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
+        AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM] = 0;
+        app_DisplayFilter_RC(app_DisplayFilter_kalman(0, AllStatus_S.flashSave_s.TarTemp), AllStatus_S.flashSave_s.TarTemp);
     }
     else
     {
@@ -742,6 +743,15 @@ float32_t app_DisplayFilter_RC(float32_t Cur, float32_t Tar)
 
     float32_t alpha = DISPLAY_FILTER_BASE_ALPHA;
     float32_t diff = fabsf(cur_temp - tar_temp);
+
+    if (Cur < 1.0f)
+    {
+        for (int i = 0; i < DISPLAY_FILTER_MUM; i++)
+        {
+            filtered[i] = 0;
+        }
+        return 0.0f;
+    }
 
     if (AllStatus_S.OneState_TempOk)
     {
