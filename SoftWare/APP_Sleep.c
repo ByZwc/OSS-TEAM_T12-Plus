@@ -229,7 +229,12 @@ void APP_Sleep_Control_Task(void)
         if (AllStatus_S.CurTemp < SLEEP_DEEP_TEMP_RANGE)
         {
             AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP_DEEP;
-            Drive_DisplayLcd_SetBrightnessLow();
+            if (AllStatus_S.flashSave_s.BackgroundLightOnoff)
+            {
+                Drive_DisplayLcd_SetBrightnessLow();
+                HAL_Delay(10);
+                Drive_DisplayLcd_SetBrightnessLow();
+            }
         }
         break;
 
@@ -286,14 +291,18 @@ uint32_t APP_Sleep_PowerFilter(void)
 
 void APP_SleepBackLight_Task(void)
 {
-    static uint8_t backlight_off = 0;
+    static uint8_t executed = 0;
+
     if (AllStatus_S.flashSave_s.BackgroundLightOnoff)
     {
-        backlight_off++;
-        if (backlight_off > 5)
-        {
+        if (executed != 1)
             Drive_DisplayLcd_SetBrightnessLow();
-            backlight_off = 0;
-        }
+        executed = 1;
+    }
+    else
+    {
+        if (executed != 2)
+            Drive_DisplayLcd_Init();
+        executed = 2;
     }
 }
