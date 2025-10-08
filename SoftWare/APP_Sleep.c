@@ -226,24 +226,11 @@ void APP_Sleep_Control_Task(void)
 
     case SOLDERING_STATE_SLEEP:
         // 4. 低温 -> 深度休眠
-        if (AllStatus_S.flashSave_s.SolderingTypeOnOff) // 刀头补偿
+        if (AllStatus_S.CurTemp < SLEEP_DEEP_TEMP_RANGE)
         {
-            if (AllStatus_S.flashSave_s.TarTemp <= MAX_STRONG_TEMP)
-            {
-                if ((AllStatus_S.CurTemp - CALIBRATION_TEMP_SOLDERING) < SLEEP_DEEP_TEMP_RANGE)
-                {
-                    AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP_DEEP;
-                }
-            }
+            AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP_DEEP;
+            Drive_DisplayLcd_SetBrightnessLow();
         }
-        else
-        {
-            if (AllStatus_S.CurTemp < SLEEP_DEEP_TEMP_RANGE)
-            {
-                AllStatus_S.SolderingState = SOLDERING_STATE_SLEEP_DEEP;
-            }
-        }
-
         break;
 
     case SOLDERING_STATE_SLEEP_DEEP:
@@ -299,28 +286,14 @@ uint32_t APP_Sleep_PowerFilter(void)
 
 void APP_SleepBackLight_Task(void)
 {
-    // 低亮模式：深度休眠且背光开启配置
-    uint8_t low_mode = (AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP &&
-                        AllStatus_S.flashSave_s.BackgroundLightOnoff);
-
-    // 记录上一次模式，-1 表示未初始化
-    static int8_t prev_mode = -1;
-
-    if ((int8_t)low_mode != prev_mode)
+    static uint8_t backlight_off = 0;
+    if (AllStatus_S.flashSave_s.BackgroundLightOnoff)
     {
-        if (low_mode)
+        backlight_off++;
+        if (backlight_off > 5)
         {
             Drive_DisplayLcd_SetBrightnessLow();
-            HAL_Delay(1);
-            Drive_DisplayLcd_SetBrightnessLow();
+            backlight_off = 0;
         }
-        else
-        {
-            Drive_DisplayLcd_Init();
-            HAL_Delay(1);
-            Drive_DisplayLcd_Init();
-        }
-
-        prev_mode = (int8_t)low_mode;
     }
 }
