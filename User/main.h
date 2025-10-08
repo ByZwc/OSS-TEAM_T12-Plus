@@ -147,7 +147,7 @@
 
 #define T115_SOLDERING_MAX_PID 20 // 最大功率输出温度阈值
 #define T210_SOLDERING_MAX_PID 20 // 最大功率输出温度阈值
-#define T245_SOLDERING_MAX_PID 45 // 最大功率输出温度阈值
+#define T245_SOLDERING_MAX_PID 60 // 最大功率输出温度阈值
 
 #define SOLDERING_ELECTRICITY_THRESHOLD 250 // 短路电压阈值
 #define SOLDERING_ELECTRICITY_OPEN 20       // 开路电压阈值

@@ -34,7 +34,7 @@ void Drive_AdcConfig(void)
     AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE; /* No external trigger edge */
     AdcHandle.Init.DMAContinuousRequests = DISABLE;                      /* isable DMA */
     AdcHandle.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;                   /* Overrun handling: overwrite previous value  */
-    AdcHandle.Init.SamplingTimeCommon = ADC_SAMPLETIME_71CYCLES_5;       /* Set sampling time */
+    AdcHandle.Init.SamplingTimeCommon = ADC_SAMPLETIME_7CYCLES_5;       /* Set sampling time */
     /* Initialize ADC */
     if (HAL_ADC_Init(&AdcHandle) != HAL_OK)
     {

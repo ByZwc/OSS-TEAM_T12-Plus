@@ -1,6 +1,7 @@
 #include "main.h"
 
-#define PID_TASK_INTERVAL 10
+#define PID_TASK_INTERVAL 20
+#define BUZZ_TASK_INTERVAL 20
 #define ENCODER_TASK_INTERVAL 50
 #define BUTTON_TASK_INTERVAL 100
 #define SLEEP_TASK_INTERVAL 250
@@ -8,6 +9,7 @@
 void app_timeSlice_Task(void)
 {
     static uint32_t last_pidTick = 0;
+    static uint32_t last_buzzTick = 0;
     static uint32_t last_sleepTick = 0;
     static uint32_t last_encoderTick = 0;
     static uint32_t last_IconBlinkTick = 0;
@@ -17,6 +19,11 @@ void app_timeSlice_Task(void)
     {
         last_pidTick += PID_TASK_INTERVAL;
         app_pid_Task(); // PID任务
+    }
+
+    if (uwTick - last_buzzTick >= BUZZ_TASK_INTERVAL)
+    {
+        last_buzzTick += BUZZ_TASK_INTERVAL;
         app_Buz_Task(); // 蜂鸣器任务
     }
 
