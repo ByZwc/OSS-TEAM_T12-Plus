@@ -76,11 +76,11 @@ static void app_pid_iCmd(uint16_t TarTemp, float32_t CurTemp)
 #endif
 
 #ifndef APP_MAX_POWER_SWITCH_COUNT_ON
-#define APP_MAX_POWER_SWITCH_COUNT_ON 20 // 进入最大功率状态所需连续判定次数
+#define APP_MAX_POWER_SWITCH_COUNT_ON 10 // 进入最大功率状态所需连续判定次数
 #endif
 
 #ifndef APP_MAX_POWER_SWITCH_COUNT_OFF
-#define APP_MAX_POWER_SWITCH_COUNT_OFF 2 // 退出最大功率状态所需连续判定次数
+#define APP_MAX_POWER_SWITCH_COUNT_OFF 4 // 退出最大功率状态所需连续判定次数
 #endif
 
 // 最大功率输出滤波(进入/退出分离去抖)

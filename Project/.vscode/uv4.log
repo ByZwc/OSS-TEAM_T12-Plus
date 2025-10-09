@@ -21,7 +21,7 @@ Feature(s) : RDI, GDB, FlashDL, FlashBP, JFlash
 * JLink Info: AP[0]: AHB-AP ROM base: 0xE00FF000
 * JLink Info: CPUID register: 0x410CC601. Implementer code: 0x41 (ARM)
 * JLink Info: Found Cortex-M0 r0p1, Little endian.
-* JLink Info: FPUnit: 4 code (BP) slots and 0 literal slots
+* JLink Info: FPUnit: 0 code (BP) slots and 0 literal slots
 * JLink Info: CoreSight components:
 * JLink Info: ROMTbl[0] @ E00FF000
 * JLink Info: [0][0]: E000E000 CID B105E00D PID 000BB008 SCS
@@ -35,9 +35,9 @@ ROMTableAddr = 0xE00FF000
 Target info:
 ------------
 Device: PY32F003x8
-VTarget = 3.108V
+VTarget = 3.309V
 State of Pins: TCK: 0, TDI: 0, TDO: 0, TMS: 1, TRES: 1, TRST: 0
-Hardware-Breakpoints: 4
+Hardware-Breakpoints: 0
 Software-Breakpoints: 8192
 Watchpoints:          2
 JTAG speed: 1000 kHz
@@ -49,4 +49,4 @@ Erase Done.Programming Done.Verify OK.* JLink Info: Memory map 'before startup c
 * JLink Info: Reset: Reset device via AIRCR.SYSRESETREQ.
 * JLink Info: Memory map 'after startup completion point' is active
 Application running ...
-Flash Load finished at 17:08:39
+Flash Load finished at 14:33:24
