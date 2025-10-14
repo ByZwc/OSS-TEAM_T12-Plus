@@ -109,9 +109,11 @@ void APP_Sleep_Control_Task(void)
     static uint32_t stable_time_ms = 0;     // 用于判定进入待机
     static uint8_t initialized = 0;         // 是否已初始化
     static uint32_t standby_elapsed_ms = 0; // 已处于待机后的累计时间
+    static uint32_t last_common_change = 0; // 上次 CommonModeChange 值，用于判定编码器调节
     uint32_t cur_adc_value = APP_Sleep_GetAdcValue();
     // Lcd_SMG_DisplaySel(cur_adc_value, 1, uintHex);
 
+    // 故障错误，退出并清零计时
     if (AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR)
     {
         stable_time_ms = 0;
@@ -119,6 +121,7 @@ void APP_Sleep_Control_Task(void)
         return;
     }
 
+    // 功率变化超范围，清零睡眠计时
     if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
     {
         AllStatus_S.Sleep_PowerFilter = APP_Sleep_PowerFilter();
@@ -129,6 +132,7 @@ void APP_Sleep_Control_Task(void)
         }
     }
 
+    // 温度变化超范围，清零睡眠计时
     if (AllStatus_S.SolderingState == SOLDERING_STATE_OK)
     {
         float temp_diff = (float32_t)AllStatus_S.flashSave_s.TarTemp - AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM];
@@ -140,6 +144,7 @@ void APP_Sleep_Control_Task(void)
         }
     }
 
+    // 进入一键强温，清零睡眠计时
     if (AllStatus_S.encoder_s.OneKeyStrongTemp && AllStatus_S.SolderingState == SOLDERING_STATE_OK)
     {
         stable_time_ms = 0;
@@ -153,17 +158,19 @@ void APP_Sleep_Control_Task(void)
         initialized = 1;
     }
 
+    // 获取ADC变化量
     uint32_t diff = (cur_adc_value > last_adc_value) ? (cur_adc_value - last_adc_value)
                                                      : (last_adc_value - cur_adc_value);
 
     uint32_t standby_threshold_ms = (uint32_t)AllStatus_S.flashSave_s.StandbyTime * 1000UL;     // 秒 -> ms
     uint32_t sleep_delay_ms = (uint32_t)AllStatus_S.flashSave_s.SleepDelayTime * 60UL * 1000UL; // 分钟 -> ms
 
-    // 1. 大幅变化: 退出非正常状态
-    if (diff > SLEEP_ADC_STABLE_RANGE)
+    // 1. 大幅变化: 退出待机睡眠状态 & 调节编码器：退出待机睡眠状态
+    if (diff > SLEEP_ADC_STABLE_RANGE || (last_common_change != AllStatus_S.Seting.CommonModeChange))
     {
         stable_time_ms = 0;
         standby_elapsed_ms = 0;
+        last_common_change = AllStatus_S.Seting.CommonModeChange;
         if (AllStatus_S.SolderingState == SOLDERING_STATE_STANDBY ||
             AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP ||
             AllStatus_S.SolderingState == SOLDERING_STATE_SLEEP_DEEP)

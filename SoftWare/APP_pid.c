@@ -1,6 +1,6 @@
 #include "main.h"
 
-#define PID_PCMD_DIFF_THRESHOLD 15.0f
+#define PID_PCMD_DIFF_THRESHOLD 10.0f
 // P系数补偿
 static float32_t app_pid_PCmd(uint16_t TarTemp, float32_t CurTemp)
 {
