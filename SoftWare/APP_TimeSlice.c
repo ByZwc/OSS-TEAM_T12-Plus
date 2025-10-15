@@ -52,10 +52,13 @@ void app_timeSlice_Task(void)
     if (uwTick - last_ButtonTick >= BUTTON_TASK_INTERVAL)
     {
         last_ButtonTick += BUTTON_TASK_INTERVAL;
-        app_ButtonCheck_Task();           // 按钮检测任务
-        app_SolderingTempDisplay();       // 烙铁头温度显示任务
-        APP_Lcd_PowerSetPoint_Task();     // 设置LCD电源点
-        app_SelBlink_Task();              // 选项闪烁
-        Drive_DisplayLcd_sendData_Task(); // LCD显示信息发送任务
+        APP_SolderingNoHeatingCheck_Task(); // 无加热保护检测
+        app_ButtonCheck_Task();             // 按钮检测任务
+        app_SolderingTempDisplay();         // 烙铁头温度显示任务
+        APP_Lcd_PowerSetPoint_Task();       // 设置LCD电源点
+        app_SelBlink_Task();                // 选项闪烁
+        Drive_DisplayLcd_sendData_Task();   // LCD显示信息发送任务
     }
 }
+
+

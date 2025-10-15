@@ -100,7 +100,8 @@ void APP_Sleep_Control_Task(void)
     // 1. ADC变化超过阈值 -> 退出待机/休眠/深度睡眠，恢复正常
     //    或者功率超过阈值 -> 退出待机/休眠/深度睡眠，恢复正常
     //    或者温度偏差超过阈值 -> 退出待机/休眠/深度睡眠，恢复正常
-    //    （以上三项任意一项满足即可）
+    //    或者旋转编码器变化 -> 退出待机/休眠/深度睡眠，恢复正常
+    //    （以上四项任意一项满足即可）
     // 2. 一键增强温度激活 -> 清空计时
     // 3. ADC在 StandbyTime 秒内保持稳定 -> 进入待机
     // 4. 待机时间超过 SleepDelayTime 分钟 -> 进入休眠
@@ -114,7 +115,7 @@ void APP_Sleep_Control_Task(void)
     // Lcd_SMG_DisplaySel(cur_adc_value, 1, uintHex);
 
     // 故障错误，退出并清零计时
-    if (AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR)
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_PULL_OUT_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_SHORTCIR_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_HEATING_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_INIT_ERROR || AllStatus_S.SolderingState == SOLDERING_STATE_NTC_ERROR)
     {
         stable_time_ms = 0;
         standby_elapsed_ms = 0;

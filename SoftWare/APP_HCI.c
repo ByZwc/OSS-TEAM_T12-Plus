@@ -710,6 +710,10 @@ void app_SolderingTempDisplay(void)
                 Lcd_SMG_DisplaySel(ERROR_E3, 1, DispErrorNum);
                 AllStatus_S.OneState_TempOk = 0;
                 break;
+            case SOLDERING_STATE_HEATING_ERROR: // 加热异常
+                Lcd_SMG_DisplaySel(ERROR_E2, 1, DispErrorNum);
+                AllStatus_S.OneState_TempOk = 0;
+                break;
             case SOLDERING_STATE_STANDBY: // 进入待机
                 if (AllStatus_S.flashSave_s.StandbyTime)
                 {
@@ -835,6 +839,107 @@ void APP_OneKeyStrongTemp_Task(void)
                 AllStatus_S.flashSave_s.TarTemp -= 50;
             active = 0;
             elapsed = 0;
+        }
+    }
+}
+
+// 宏定义
+#define NO_HEATING_HIGH_PID_OUT_THRESH 8000
+#define NO_HEATING_MID_PID_OUT_THRESH 3000
+#define NO_HEATING_TEMP_DROP_SLOW_MAX 8.0f                                   // 每秒最大允许下降（慢下降，度）
+#define NO_HEATING_TEMP_DROP_FAST_MIN 25.0f                                  // 每秒快速下降阈值（度）
+#define NO_HEATING_TEMP_LOW_THRESH 80.0f                                     // 低温阈值（度）
+#define NO_HEATING_ERROR_TIMEOUT_SEC 5                                       // 故障判定时间（秒）
+#define NO_HEATING_ERROR_TIMEOUT_CNT_SEC (NO_HEATING_ERROR_TIMEOUT_SEC * 10) // 100ms周期
+
+void APP_SolderingNoHeatingCheck_Task(void) // 函数调用周期（100ms）
+{
+    static uint32_t last_common_change = 0;
+    static float history_temp = 0.0f;
+    static uint32_t slow_drop_cnt = 0;
+    static uint32_t low_temp_cnt = 0;
+    static uint32_t last_temp_check_cnt = 0;
+
+    // 退出加热异常状态
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_HEATING_ERROR && (last_common_change != AllStatus_S.Seting.CommonModeChange))
+    {
+        last_common_change = AllStatus_S.Seting.CommonModeChange;
+        AllStatus_S.SolderingState = SOLDERING_STATE_OK;
+    }
+    else
+    {
+        last_common_change = AllStatus_S.Seting.CommonModeChange;
+    }
+
+    // 正常状态下
+    if (AllStatus_S.SolderingState == SOLDERING_STATE_OK && AllStatus_S.pid_s.outCmd)
+    {
+        static float temp_now;
+        static uint8_t oneState = 0;
+        temp_now = AllStatus_S.data_filter_prev[SOLDERING_TEMP210_NUM];
+        // 高PID输出，缓慢下降检测
+        if (AllStatus_S.pid_s.pid_out > NO_HEATING_HIGH_PID_OUT_THRESH)
+        {
+            float temp_drop = history_temp - temp_now;
+
+            // 快速下降且温度大于阈值，清零计时
+            if (temp_drop > NO_HEATING_TEMP_DROP_FAST_MIN && temp_now > NO_HEATING_TEMP_LOW_THRESH)
+            {
+                slow_drop_cnt = 0;
+                oneState = 1;
+            }
+
+            // 缓慢下降
+            if (temp_drop >= 0 && temp_drop <= NO_HEATING_TEMP_DROP_SLOW_MAX && oneState == 0)
+            {
+                slow_drop_cnt++;
+                if (slow_drop_cnt >= NO_HEATING_ERROR_TIMEOUT_CNT_SEC)
+                {
+                    AllStatus_S.SolderingState = SOLDERING_STATE_HEATING_ERROR;
+                    Drive_Buz_OnOff(BUZ_1S, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
+                    slow_drop_cnt = 0;
+                }
+            }
+            else
+            {
+                slow_drop_cnt = 0;
+            }
+        }
+        else
+        {
+            slow_drop_cnt = 0;
+            oneState = 0;
+        }
+
+        // 每秒记录一次历史温度
+        last_temp_check_cnt++;
+        if (last_temp_check_cnt >= 10) // 100ms * 10 = 1s
+        {
+            last_temp_check_cnt = 0;
+            history_temp = temp_now;
+        }
+
+        if (temp_now < NO_HEATING_TEMP_LOW_THRESH)
+        {
+            // 中等PID输出，低温检测
+            if (AllStatus_S.pid_s.pid_out > NO_HEATING_MID_PID_OUT_THRESH)
+            {
+                low_temp_cnt++;
+                if (low_temp_cnt >= NO_HEATING_ERROR_TIMEOUT_CNT_SEC)
+                {
+                    AllStatus_S.SolderingState = SOLDERING_STATE_HEATING_ERROR;
+                    Drive_Buz_OnOff(BUZ_1S, BUZ_FREQ_CHANGE_OFF, USE_BUZ_TYPE);
+                    low_temp_cnt = 0;
+                }
+            }
+            else
+            {
+                low_temp_cnt = 0;
+            }
+        }
+        else
+        {
+            low_temp_cnt = 0;
         }
     }
 }

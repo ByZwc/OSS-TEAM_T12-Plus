@@ -110,9 +110,6 @@ void APP_ErrorHandler(void)
     case SOLDERING_STATE_SHORTCIR_ERROR:
       Lcd_SMG_DisplaySel(ERROR_E2, 1, DispErrorNum);
       break;
-    case SOLDERING_STATE_OPEN_ERROR:
-      Lcd_SMG_DisplaySel(ERROR_E0, 1, DispErrorNum);
-      break;
     case SOLDERING_STATE_PULL_OUT_ERROR:
       Lcd_SMG_DisplaySel(ERROR_E3, 1, DispErrorNum);
       APP_shortCircuitProtection();

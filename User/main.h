@@ -96,7 +96,7 @@
 
 // 积分限幅
 #define T210_MAX_PID_I 2250 // 60W
-#define T245_MAX_PID_I 2000 // 110W ±10W
+#define T245_MAX_PID_I 3000 // 110W ±10W
 #define T115_MAX_PID_I 750  // 30W
 
 // 功率限幅
@@ -187,7 +187,7 @@
 
 #define ERROR_E0 0           // 烧坏&开路&短路
 #define ERROR_E1 1           // NTC温度过高
-#define ERROR_E2 2           // 短路
+#define ERROR_E2 2           // 加热异常
 #define ERROR_E3 3           // 手柄未接
 #define ERROR_SYSTEM_INIT 15 // MCU外设损坏
 #define DRIVE_SLEEP 16       // 睡眠
@@ -257,12 +257,12 @@ typedef enum
     SOLDERING_STATE_OK = 0,         // 正常状态
     SOLDERING_STATE_INIT_ERROR,     // MCU外设损坏
     SOLDERING_STATE_SHORTCIR_ERROR, // 短路状态
-    SOLDERING_STATE_OPEN_ERROR,     // 开路状态
-    SOLDERING_STATE_STANDBY,        // 待机状态
+    SOLDERING_STATE_PULL_OUT_ERROR, // 拔出错误、开路状态
+    SOLDERING_STATE_STANDBY,        // 待机状态（可加热）
     SOLDERING_STATE_SLEEP,          // 休眠状态
     SOLDERING_STATE_SLEEP_DEEP,     // 深度睡眠状态
     SOLDERING_STATE_NTC_ERROR,      // NTC错误状态
-    SOLDERING_STATE_PULL_OUT_ERROR  // 拔出错误状态
+    SOLDERING_STATE_HEATING_ERROR,  // 加热错误状态
 } TYPEDEF_SOLDERING_STATE_S;
 
 typedef struct
